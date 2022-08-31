@@ -1,0 +1,40 @@
+{
+  "name": "mint-it-fullstack",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "build-clean": "rimraf .next"
+  },
+  "dependencies": {
+    "@tailwindcss/forms": "^0.5.2",
+    "axios": "^0.27.2",
+    "canvas": "^2.9.3",
+    "classnames": "^2.3.1",
+    "crypto": "^1.0.1",
+    "file-saver": "^2.0.5",
+    "formidable": "^2.0.1",
+    "fs-extra": "^10.1.0",
+    "gif-encoder-2": "^1.0.5",
+    "jszip": "^3.10.1",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "next": "12.2.5",
+    "prop-types": "^15.8.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-flip-move": "^3.0.4",
+    "react-icons": "^4.4.0",
+    "sha1": "^1.1.1"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.8",
+    "eslint": "8.22.0",
+    "eslint-config-next": "12.2.5",
+    "postcss": "^8.4.16",
+    "tailwindcss": "^3.1.8"
+  }
+}
