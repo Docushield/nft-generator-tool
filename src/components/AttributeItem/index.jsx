@@ -7,7 +7,6 @@ import {
   BsArrowUp,
   BsFillCheckCircleFill,
   BsFillTrashFill,
-  BsPencilSquare,
   BsFillXCircleFill,
 } from "react-icons/bs";
 import iconEdit from "@/assets/icon-edit.png";
@@ -15,12 +14,7 @@ import React, { useState } from "react";
 import { useAppContext } from "@/state/context";
 import {
   updateCurrentAttributeId,
-  updateCurrentLayerId,
-  createOriginalData,
-  createOrganizeData,
-  updateOrganizeData,
   updateCurrentLayers,
-  updateCurrentAttributes,
 } from "@/state/actions";
 
 export default function AttributeItem({
@@ -32,6 +26,7 @@ export default function AttributeItem({
   ...props
 }) {
   const { state, dispatch } = useAppContext();
+  const [error, setError] = useState('');
   const { currentAttributeId, organizeData } = state;
   const cs = classNames(["p-2 bg-white w-96", className]);
   const [editing, setEditing] = useState(false);
@@ -49,17 +44,27 @@ export default function AttributeItem({
 
   const editItemHandler = (name) => {
     console.log("key:", idx, "name:", name);
+    if (!validateAttribute(name)) {
+      error = 'can input illegal character, please input letter or number';
+      setError(error);
+      return;
+    }
+    else {
+      setError('');
+    }
     setCacheVal(name);
   };
 
   const saveEditHandler = () => {
     editItem(idx, cacheVal);
     setEditing(false);
+    setError("");
   };
 
   const cancelEditHandler = () => {
     setCacheVal(data.name);
     setEditing(false);
+    setError("");
   };
 
   const activeHandler = (idx) => {
@@ -69,6 +74,12 @@ export default function AttributeItem({
     });
     dispatch(updateCurrentLayers(organizeData[index].elements));
   };
+
+
+  const validateAttribute = (value) => {
+    const rule = /^[A-Za-z0-9]+$/ ;
+    return value.match(rule);
+  }
 
   return (
     <div
@@ -90,6 +101,7 @@ export default function AttributeItem({
               }}
             />
           </div>
+          <div>
           <input
             type="text"
             className="w-full bg-gray-100 rounded p-3 border focus:outline-none focus:border-blue-500"
@@ -98,6 +110,8 @@ export default function AttributeItem({
               editItemHandler(e.target.value);
             }}
           ></input>
+          <div className="text-rose-500">{error}</div>
+          </div>
           <div className="flex justify-center items-center">
             <BsFillCheckCircleFill color="green" size={24}
               onClick={() => {

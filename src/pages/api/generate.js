@@ -4,7 +4,7 @@ import HashLipEngine from "@/engine/index";
 import JSZip from "jszip";
 import fs from "fs";
 import path from "path";
-import _, { lastIndexOf } from "lodash";
+import _ from "lodash";
 import crypto from "crypto";
 import fse from "fs-extra";
 async function handle(req, res) {
@@ -21,11 +21,8 @@ async function handle(req, res) {
 }
 
 async function handlePost(data, res) {
-  // engine.buildSetup();
-  // engine.startCreating();
   // const kaleidoNetInstance = new KaleidoNet();
   // const file = await kaleidoNetInstance.downloadZipFile(process.env.NEXT_CID)
-  console.log(data);
   const { sourceZip, organizeData, collection } = data;
   const { footprint, localtion } = await _unzipAssets(
     sourceZip
@@ -35,12 +32,12 @@ async function handlePost(data, res) {
     localtion,
     organizeData
   );
-  console.log("layersOrder:", layersOrder);
+  // console.log("layersOrder:", layersOrder);
   const layerConfig = {
     growEditionSizeTo: collection.total,
     layersOrder: layersOrder,
   };
-  console.log("layerConfig:", layerConfig);
+  // console.log("layerConfig:", layerConfig);
   const outputPath = await _generate(layerConfig, collection, layersDir, footprint);
   const zipfile = await _zipOutputfile(footprint, outputPath);
   console.log(footprint, localtion, outputPath, zipfile, outputPath);
@@ -56,7 +53,7 @@ async function _unzipAssets(filename) {
   const keys = Object.keys(result.files);
 
   const footprint = path.basename(zipfile).replace(/\.[^/.]+$/, "");
-  fse.ensureDirSync(`${rootdir}/${footprint}`);
+  // fse.ensureDirSync(`${rootdir}/space/${footprint}`);
 
   let localtion = "";
   for (let key of keys) {
@@ -86,14 +83,14 @@ function _createLayers(footprint, localtion, organizeData) {
     const relativePath = _.trimStart(_.split(absolutePath, footprint)[1], "/");
     const hash = crypto.createHash("sha256").update(relativePath).digest("hex");
     collection.set(hash, absolutePath);
-    console.log(
-      "relativePath:",
-      relativePath,
-      "hash:",
-      hash,
-      "item:",
-      absolutePath
-    );
+    // console.log(
+    //   "relativePath:",
+    //   relativePath,
+    //   "hash:",
+    //   hash,
+    //   "item:",
+    //   absolutePath
+    // );
   });
 
   let layersOrder = [];
@@ -101,9 +98,8 @@ function _createLayers(footprint, localtion, organizeData) {
   organizeData.forEach((item) => {
     layersOrder.push({ name: item.name });
     item.elements.forEach((el) => {
-      console.log("el.hash:", el.hash);
       const absolutePath = collection.get(el.hash);
-      console.log("el.hash:", el.hash, ",path:", absolutePath);
+      // console.log("el.hash:", el.hash, ",path:", absolutePath);
       el.sPath = absolutePath;
 
       const prefix = _.split(absolutePath, footprint)[0] + "/" + footprint;
@@ -145,12 +141,12 @@ async function _generate(layersConfig, collection, layersDir, footprint) {
 
 async function _zipOutputfile(footprint, outputBuild) {
   const paths = _fetchFilePath(outputBuild);
-  console.log("paths:", paths);
+  // console.log("paths:", paths);
   return new Promise((resolve, reject) => {
     const JSzipHdl = new JSZip();
     paths.forEach(file => {
       const relativeFile = _.split(file,footprint)[1];
-      console.log("relativeFile:", relativeFile);
+      // console.log("relativeFile:", relativeFile);
       if (relativeFile) {
         const content = fs.readFileSync(file)
         JSzipHdl.file(relativeFile, content);

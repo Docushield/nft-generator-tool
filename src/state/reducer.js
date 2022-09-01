@@ -8,11 +8,9 @@ const reducer = (state, action) => {
       return { ...state, currentLayerId: action.payload };
     }
     case actionTypes.CREATE_ORIGINAL_DATA: {
-      console.log("CREATE_ORIGINAL_DATA:", action.payload);
       return { ...state, originalData: action.payload };
     }
     case actionTypes.CREATE_ORGANIZE_DATA: {
-      console.log("CREATE_ORGANIZE_DATA:", action.payload);
       return { ...state, organizeData: action.payload };
     }
     case actionTypes.UPDATE_ORGANIZE_DATA: {

@@ -37,12 +37,12 @@ export default function MintBlock() {
     console.log(event);
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
-      console.log("file:",file);
+      // console.log("file:",file);
       const fileReader = new FileReader();
       fileReader.readAsText(file, "UTF-8");
       fileReader.onload = e => {
         const content = e.target.result;
-        console.log(content);
+        // console.log(content);
         setFileContent(JSON.parse(content));
         collection.whiteList = JSON.parse(content);
         dispatch(updateCollection(collection));

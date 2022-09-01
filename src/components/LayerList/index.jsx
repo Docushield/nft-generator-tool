@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import classNames from "classnames";
 import PropTypes from "prop-types";
 import LayerItem from "@/components/LayerItem";
 import _ from "lodash";
 import { useAppContext } from "@/state/context";
-import {updateCurrentAttributeId,updateCurrentLayerId,createOriginalData,createOrganizeData,updateOrganizeData,updateCurrentLayers,updateCurrentAttributes} from "@/state/actions"
+import {updateOrganizeData,updateCurrentLayers} from "@/state/actions"
 export default function LayerList({
   children,
   dataList,

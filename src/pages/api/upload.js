@@ -14,12 +14,12 @@ const handle = async (req, res) => {
   fse.ensureDirSync(uploadDir);
   const form = new formidable.IncomingForm();
   form.uploadDir = uploadDir;
-  console.log(form.uploadDir);
+  // console.log(form.uploadDir);
   form.keepExtensions = true;
   form.parse(req, (err, fields, files) => {
-    console.log(err, fields, files);
+    // console.log(err, fields, files);
     const [filename, fileHdl]= Object.entries(files)[0];
-    console.log("filename:", filename, "file:", fileHdl);
+    // console.log("filename:", filename, "file:", fileHdl);
     fs.renameSync(fileHdl.filepath,`${fileHdl.filepath}.zip`);
     res.status(200).json({filename: path.basename(`${fileHdl.filepath}.zip`)});
   });

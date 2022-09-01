@@ -8,7 +8,7 @@ import {
   BsFillXCircleFill,
 } from "react-icons/bs";
 import { useAppContext } from "@/state/context";
-import {updateCurrentAttributeId,updateCurrentLayerId,createOriginalData,createOrganizeData,updateOrganizeData,updateCurrentLayers,updateCurrentAttributes} from "@/state/actions"
+import {updateOrganizeData,updateCurrentLayers} from "@/state/actions"
 
 export default function LayerItem({
   data,

@@ -3,7 +3,6 @@ import classNames from "classnames";
 import PropTypes from "prop-types";
 import AttributeItem from "@/components/AttributeItem";
 import _ from "lodash";
-import { useAppContext } from "@/state/context";
 export default function AttributeList({
   children,
   dataList,
