@@ -1,24 +1,29 @@
-import React, { useState } from "react";
-import Image from 'next/image'
-import nftImg from "@/assets/preview.png";
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import defaultImage from "@/assets/preview.png";
 import PrimaryButton from "@/components/ui/PrimaryButton";
+import ProgressBar from "@/components/ui/ProgressBar";
 import iconEdit from "@/assets/icon-edit.png";
 import axios from "axios";
 import { useAppContext } from "@/state/context";
-import {updateCollection} from "@/state/actions"
+import { updateCollection } from "@/state/actions";
 import moment from "moment";
 export default function MintBlock() {
   const { state, dispatch } = useAppContext();
-  const {collection, organizeData, sourceZip} = state;
-  const [wlOpen, setWlOpen] = useState('wlopen');
-  const [mintType, setMintType] = useState('public');
+  const { collection, organizeData, sourceZip } = state;
+  const [wlOpen, setWlOpen] = useState("wlopen");
+  const [mintType, setMintType] = useState("public");
   const [fileContent, setFileContent] = useState("");
+  const [previewing, setPreview] = useState(false);
+  const [footprint, setFootprint] = useState("");
+  const [previewImageUrl, setPreviewImageUrl] = useState(defaultImage);
+  const [progressPercentage, setProgressPercentage] = useState(10);
   const formHandler = (e) => {
     e.preventDefault();
   };
 
   const inputChangeHandler = (e) => {
-    e.preventDefault()
+    e.preventDefault();
     console.log("value:", e.target.value, "name:", e.target.name);
     collection[e.target.name] = e.target.value;
     dispatch(updateCollection(collection));
@@ -27,11 +32,11 @@ export default function MintBlock() {
   };
 
   const mintTypeHandler = (e) => {
-    e.preventDefault()
-    setMintType(e.target.value)
+    e.preventDefault();
+    setMintType(e.target.value);
     collection.mintType = e.target.value;
     dispatch(updateCollection(collection));
-  }
+  };
 
   const handleUploadWL = (event) => {
     console.log(event);
@@ -40,7 +45,7 @@ export default function MintBlock() {
       // console.log("file:",file);
       const fileReader = new FileReader();
       fileReader.readAsText(file, "UTF-8");
-      fileReader.onload = e => {
+      fileReader.onload = (e) => {
         const content = e.target.result;
         // console.log(content);
         setFileContent(JSON.parse(content));
@@ -48,54 +53,84 @@ export default function MintBlock() {
         dispatch(updateCollection(collection));
       };
     }
-  }
+  };
 
   const mintTimeHandler = (event) => {
-    event.preventDefault()
-    console.log("value:",event.target.value, "name:", event.target.name);
-    const utc = moment(event.target.value).utc().format()
+    event.preventDefault();
+    console.log("value:", event.target.value, "name:", event.target.name);
+    const utc = moment(event.target.value).utc().format();
     collection[event.target.name] = utc;
     dispatch(updateCollection(collection));
-  }
-
+  };
 
   const letsMintHandler = async () => {
     collection.mintType = mintType;
     dispatch(updateCollection(collection));
 
-    const rs = await generateOutputfile()
-    
+    const rs = await generateOutputfile();
+
     if (rs.status == 200) {
       console.log(rs.data);
-      const {footprint, download} = rs.data.download;
-      await downloadOutputFile(footprint)
+      const { footprint, downzip } = rs.data;
+      await downloadOutputFile(footprint);
     }
-    
-  }
+  };
+
+  const generatePreviewHandler = async (e) => {
+    if (previewing) return false;
+
+    setPreview(true);
+    const payload = {
+      collection: collection,
+      organizeData: organizeData,
+      sourceZip: sourceZip,
+    };
+    const url = await axios.post("/api/preview", payload).then((response) => {
+      if (response.status == 200) {
+        const { footprint, preview } = response.data;
+        const url = `/${preview}`;
+        console.log("url:", url);
+        setFootprint(footprint);
+        return url;
+      }
+    });
+    setPreview(false);
+    setPreviewImageUrl(url);
+  };
 
   const generateOutputfile = async () => {
-    const payload = {collection:collection, organizeData:organizeData, sourceZip:sourceZip }
-    const res = await axios.post('/api/generate', payload,{baseURL:process.env.NEXT_PUBLIC_API_URL});
+    const payload = {
+      footprint: footprint,
+    };
+    const res = await axios.post("/api/generate", payload);
     console.log(res);
     return res;
-  }
-
-
+  };
 
   const downloadOutputFile = async (footprint) => {
     await axios({
       url: `/api/download/${footprint}.zip`,
-      method: 'GET',
-      responseType: 'blob', // important
+      method: "GET",
+      responseType: "blob", // important
     }).then((response) => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', `${footprint}.zip`);
+      link.setAttribute("download", `${footprint}.zip`);
       document.body.appendChild(link);
       link.click();
     });
-  }
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // console.log("previewing:",previewing);
+      const nextProgress =
+        progressPercentage >= 100 ? 0 : progressPercentage + 10;
+      setProgressPercentage(nextProgress);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [progressPercentage, previewing]);
 
   return (
     <section className="px-6">
@@ -135,11 +170,25 @@ export default function MintBlock() {
               </div>
               <div className="text-gray grid grid-cols-2 gap-1 items-center">
                 <div>
-                  <input type={"radio"} className="mr-1" onChange={e => setMintType(e.target.value)} defaultChecked={mintType==='private'} value={"private"} name={"mintTypeRadio"}></input>
+                  <input
+                    type={"radio"}
+                    className="mr-1"
+                    onChange={(e) => setMintType(e.target.value)}
+                    defaultChecked={mintType === "private"}
+                    value={"private"}
+                    name={"mintTypeRadio"}
+                  ></input>
                   <label className="uppercase text-gray">private</label>
                 </div>
                 <div>
-                  <input type={"radio"} className="mr-1" defaultChecked={mintType=='public'} onChange={e => setMintType(e.target.value)} value={"public"} name={"mintTypeRadio"}></input>
+                  <input
+                    type={"radio"}
+                    className="mr-1"
+                    defaultChecked={mintType == "public"}
+                    onChange={(e) => setMintType(e.target.value)}
+                    value={"public"}
+                    name={"mintTypeRadio"}
+                  ></input>
                   <label className="uppercase text-gray">public</label>
                 </div>
               </div>
@@ -221,32 +270,46 @@ export default function MintBlock() {
               <div className="flex items-center">
                 <div className="text-gray grid grid-cols-2 gap-1 items-center">
                   <div>
-                    <input type={"radio"} className="mr-1" onChange={e => setWlOpen(e.target.value)} defaultChecked={wlOpen=='wlclose'} value={'wlclose'} name={"wl"}></input>
+                    <input
+                      type={"radio"}
+                      className="mr-1"
+                      onChange={(e) => setWlOpen(e.target.value)}
+                      defaultChecked={wlOpen == "wlclose"}
+                      value={"wlclose"}
+                      name={"wl"}
+                    ></input>
                     <label className="uppercase">no</label>
                   </div>
                   <div>
-                    <input type={"radio"} className="mr-1" value={"wlopen"} defaultChecked={wlOpen=='wlopen'} onChange={e => setWlOpen(e.target.value)} name={"wl"}></input>
+                    <input
+                      type={"radio"}
+                      className="mr-1"
+                      value={"wlopen"}
+                      defaultChecked={wlOpen == "wlopen"}
+                      onChange={(e) => setWlOpen(e.target.value)}
+                      name={"wl"}
+                    ></input>
                     <label className="uppercase">yes</label>
                   </div>
                 </div>
               </div>
             </div>
             <div className="flex items-center py-2 pl-7">
-            <label
-              htmlFor="uploadWL"
-              className="flex flex-col items-center md:gap-2 cursor-pointer"
-            >
-              <div className="rounded-sm shadow-sm uppercase border-blue border-4 w-32 h-7rounded-md bg-lightblue text-white font-medium ring-1 text-center">
-              UPLOAD WL
-              </div>
-            </label>
-            <input
-              id="uploadWL"
-              type="file"
-              onChange={(e) => handleUploadWL(e)}
-              className="hidden"
-            ></input>
-          </div>
+              <label
+                htmlFor="uploadWL"
+                className="flex flex-col items-center md:gap-2 cursor-pointer"
+              >
+                <div className="rounded-sm shadow-sm uppercase border-blue border-4 w-32 h-7rounded-md bg-lightblue text-white font-medium ring-1 text-center">
+                  UPLOAD WL
+                </div>
+              </label>
+              <input
+                id="uploadWL"
+                type="file"
+                onChange={(e) => handleUploadWL(e)}
+                className="hidden"
+              ></input>
+            </div>
           </div>
           <div className="mx-2 mb-5">
             <div className="uppercase  text-gray my-2 font-medium">
@@ -263,18 +326,39 @@ export default function MintBlock() {
         </div>
         <div className="px-5 py-3">
           <div className="shadow-md p-2 mb-3 rounded-lg bg-[#FCFCFC] ">
-            <Image src={nftImg} alt="preview" className="p-6 w-64 h-72"></Image>
-            <div className="border-t border-zinc-300 py-5">
+            <Image
+              src={previewImageUrl}
+              alt="preview"
+              className="p-6 w-64 h-72"
+              width={320}
+              height={320}
+            />
+            <div
+              className="border-t border-zinc-300 py-5"
+              onClick={(e) => {
+                generatePreviewHandler(e);
+              }}
+            >
               <span className="uppercase text-gray my-2 font-medium">
                 preview
               </span>
             </div>
           </div>
           <div className="w-full">
-            <PrimaryButton className="text-neutral-50 uppercase w-full bg-[#5BCA8E] outline-1 rounded-md shadow-md" onClick={() => {letsMintHandler()}}>
+            <PrimaryButton
+              className="text-neutral-50 uppercase w-full bg-[#5BCA8E] outline-1 rounded-md shadow-md"
+              onClick={() => {
+                letsMintHandler();
+              }}
+            >
               LETS MINT
             </PrimaryButton>
           </div>
+          {previewing && (
+            <div className="w-96 mt-4">
+              <ProgressBar progressPercentage={progressPercentage} />
+            </div>
+          )}
         </div>
       </form>
     </section>
