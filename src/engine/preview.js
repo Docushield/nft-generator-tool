@@ -4,6 +4,7 @@ import { preview, preview_gif, format } from "@/config/index";
 const canvas = createCanvas(format.width, format.height);
 const ctx = canvas.getContext("2d");
 
+
 import HashlipsGiffer from "@/modules/HashlipsGiffer";
 let hashlipsGiffer = null;
 
@@ -65,7 +66,7 @@ class HashLipPreview {
       hashlipsGiffer.start();
 
       await Promise.all(imageList).then((renderObjectArray) => {
-        console.log("renderObjectArray:", renderObjectArray);
+        // console.log("renderObjectArray:", renderObjectArray);
         // Determin the order of the Images before creating the gif
         if (order == "ASC") {
           // Do nothing
@@ -94,7 +95,6 @@ class HashLipPreview {
         });
       });
       hashlipsGiffer.stopSync();
-
       return previewPath;
     }
   }

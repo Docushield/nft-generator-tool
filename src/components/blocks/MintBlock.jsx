@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import defaultImage from "@/assets/preview.png";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import ProgressBar from "@/components/ui/ProgressBar";
 import iconEdit from "@/assets/icon-edit.png";
@@ -16,7 +15,7 @@ export default function MintBlock() {
   const [fileContent, setFileContent] = useState("");
   const [previewing, setPreview] = useState(false);
   const [footprint, setFootprint] = useState("");
-  const [previewImageUrl, setPreviewImageUrl] = useState(defaultImage);
+  const [previewImageUrl, setPreviewImageUrl] = useState('/preview.png');
   const [progressPercentage, setProgressPercentage] = useState(10);
   const formHandler = (e) => {
     e.preventDefault();
@@ -88,7 +87,7 @@ export default function MintBlock() {
     const url = await axios.post("/api/preview", payload).then((response) => {
       if (response.status == 200) {
         const { footprint, preview } = response.data;
-        const url = `/${preview}`;
+        const url = `${preview}`;
         console.log("url:", url);
         setFootprint(footprint);
         return url;
@@ -326,12 +325,10 @@ export default function MintBlock() {
         </div>
         <div className="px-5 py-3">
           <div className="shadow-md p-2 mb-3 rounded-lg bg-[#FCFCFC] ">
-            <Image
+            <img
               src={previewImageUrl}
               alt="preview"
               className="p-6 w-64 h-72"
-              width={320}
-              height={320}
             />
             <div
               className="border-t border-zinc-300 py-5"
@@ -355,7 +352,7 @@ export default function MintBlock() {
             </PrimaryButton>
           </div>
           {previewing && (
-            <div className="w-96 mt-4">
+            <div className="mt-4">
               <ProgressBar progressPercentage={progressPercentage} />
             </div>
           )}

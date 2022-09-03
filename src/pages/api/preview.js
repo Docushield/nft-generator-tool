@@ -8,6 +8,7 @@ import path from "path";
 import _ from "lodash";
 import crypto from "crypto";
 import fse from "fs-extra";
+import Cloudinary from '@/modules/Cloudinary';
 
 async function handle(req, res) {
   const { method, body } = req;
@@ -107,14 +108,14 @@ function _createLayers(footprint, localtion, organizeData) {
         el.dPath = prefix + "/destLayers/" + item.name + "/" + el.element;
       }
       const localtionPath = el.dPath.substring(0, el.dPath.lastIndexOf("/"));
-      console.log(
-        "sPath:",
-        el.sPath,
-        "dPath:",
-        el.dPath,
-        ",localtionPath:",
-        localtionPath
-      );
+      // console.log(
+      //   "sPath:",
+      //   el.sPath,
+      //   "dPath:",
+      //   el.dPath,
+      //   ",localtionPath:",
+      //   localtionPath
+      // );
       fse.ensureDirSync(`${localtionPath}`);
       fse.copyFileSync(`${el.sPath}`, `${el.dPath}`);
     });
@@ -136,28 +137,34 @@ async function _generate(layersConfig, collection, layersDir, footprint) {
 }
 
 
-async function _generatePreview(footprint,outputBuild) {
+async function _generatePreview(footprint) {
   // const paths = _fetchFilePath(outputBuild);
   const hashLipPreview = new HashLipPreview(
     footprint
   );
   
   const previewImage = await hashLipPreview.preview()
-  return previewImage;
+  const response = await Cloudinary.upload(previewImage);
+  // console.log(response);
+  return response.secure_url;
 }
 
-async function _generatePreviewGif(footprint, outputBuild) {
+async function _generatePreviewGif(footprint) {
   const hashLipPreview = new HashLipPreview(
     footprint
   );
   const gif = await hashLipPreview.previewGif();
-  const imageName = path.basename(gif);
-  const baseDir = process.cwd();
-  const publicDir = `${baseDir}/public`;
+  // const imageName = path.basename(gif);
+  // const baseDir = process.cwd();
+  // const publicDir = `${baseDir}/public`;
   
-  fse.copyFileSync(gif,`${publicDir}/${footprint}_${imageName}`);
-  console.log(gif, `${publicDir}/${footprint}_${imageName}`)
-  return `${footprint}_${imageName}`;
+  // fse.copyFileSync(gif,`${publicDir}/${footprint}_${imageName}`);
+  // console.log(gif, `${publicDir}/${footprint}_${imageName}`)
+  // return `${footprint}_${imageName}`;
+
+  const response = await Cloudinary.upload(gif);
+  // console.log(response);
+  return response.secure_url;
 }
 
 

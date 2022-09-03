@@ -9,6 +9,14 @@ const namePrefix = "Your Collection";
 const description = "Remember to replace this description";
 const baseUri = "ipfs://NewUriToReplace";
 
+
+const cloudinary = {
+  cloud_name: process.env.RESCLOUDNAME, 
+  api_key: process.env.RESAPIKEY, 
+  api_secret: process.env.RESAPISECRET 
+}
+
+
 const solanaMetadata = {
   symbol: "YC",
   seller_fee_basis_points: 1000, // Define how much % you want from secondary market sales 1000 = 10%
@@ -128,4 +136,5 @@ module.exports = {
   gif,
   preview_gif,
   kaleidoNet,
+  cloudinary,
 };
