@@ -11,9 +11,13 @@ import crypto from "crypto";
 import {updateCurrentAttributeId,updateCurrentLayerId,createOriginalData,createOrganizeData,updateOrganizeData,updateCurrentLayers,updateCurrentAttributes,getSourceZipFile} from "@/state/actions"
 export default function AssetBlock() {
   const { state, dispatch } = useAppContext();
+  const [loading, setLoading] = useState(false);
+  const [btnTxt, setBtntxt] = useState('Select Assets Folder')
   const {organizeData, currentLayers} = state
   const handelOnChange = async (e) => {
-    console.log(e);
+    // console.log(e);
+    setLoading(true);
+    setBtntxt("Processing...")
     const zip = new JSZip();
     let originalData = [];
     let organizeData = [];
@@ -48,10 +52,7 @@ export default function AssetBlock() {
     }
 
     dispatch(createOriginalData(originalData));
-    dispatch(createOrganizeData(organizeData));
-    dispatch(updateCurrentAttributeId(0));
-    dispatch(updateCurrentLayerId(0));
-    dispatch(updateCurrentLayers(organizeData[0].elements));
+  
     
     const response = await zip
       .generateAsync({ type: "blob" })
@@ -72,7 +73,12 @@ export default function AssetBlock() {
         return response
       })
       .catch((e) => console.log(e));
-
+      setLoading(false);
+      setBtntxt("Select Assets Folder");
+      dispatch(updateCurrentAttributeId(0));
+      dispatch(updateCurrentLayerId(0));
+      dispatch(updateCurrentLayers(organizeData[0].elements));
+      dispatch(createOrganizeData(organizeData));
       dispatch(getSourceZipFile(response.filename));
   };
 
@@ -87,7 +93,7 @@ export default function AssetBlock() {
               className="flex flex-col items-center md:gap-2 cursor-pointer"
             >
               <div className="py-3 px-3 border-blue border-4 w-[19em] rounded-md bg-lightblue text-white font-medium ring-1 text-center">
-                Select Assets Folder
+                {btnTxt}
               </div>
             </label>
             <input
