@@ -33,17 +33,17 @@ export default function AttributeItem({
   const [cacheVal, setCacheVal] = useState(data.name);
   const idx = data.idx;
   const moveItemHandler = (direct) => {
-    console.log("key:", idx, "direct:", direct);
+    // console.log("key:", idx, "direct:", direct);
     moveItem(idx, direct);
   };
 
   const deleteItemHandler = () => {
-    console.log("key:", idx, data);
+    // console.log("key:", idx, data);
     deleteItem(idx);
   };
 
   const editItemHandler = (name) => {
-    console.log("key:", idx, "name:", name);
+    // console.log("key:", idx, "name:", name);
     if (!validateAttribute(name)) {
       error = 'can input illegal character, please input letter or number';
       setError(error);

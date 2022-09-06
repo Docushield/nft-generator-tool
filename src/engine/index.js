@@ -23,6 +23,7 @@ const canvas = createCanvas(format.width, format.height);
 const ctx = canvas.getContext("2d");
 ctx.imageSmoothingEnabled = format.smoothing;
 var metadataList = [];
+var tokenList = [];
 var collectiondata = {};
 var attributesList = [];
 var dnaList = new Set();
@@ -215,24 +216,33 @@ class HashLipEngine {
       };
     }
     metadataList.push(tempMetadata);
+    
+    let tempTokendata = {
+      hash:sha256hash,
+      spec: {
+        type:"normal",
+        value: {
+          attributes:attributesList,
+        },
+      },
+      "content_uri": {
+        scheme: "ipfs://",
+        data: "CID",
+      }
+    }
+    tokenList.push(tempTokendata);
     collectiondata = {
       creator: creator,
       description: description,
       name: collectionName,
-      type: mintType,
       "provenance-hash": "",
       "mint-starts": mintStart,
       "premint-ends": premintEnd,
-      size: total,
-      "token-list": [],
-      "mint-price": mintPrice,
-      "mint-royalties": royalties,
-      "sale-royalties": royalties,
-      fungible: "",
-      "next-index": "",
-      "num-minted": "",
-      "num-revealed": "",
-      created: false,
+      size: parseInt(total),
+      "tokens": tokenList,
+      "mint_price": parseFloat(mintPrice),
+      "mint-royalties": [],
+      "sale-royalties": [],
       "premint-whitelist": whiteList,
     };
     attributesList = [];
