@@ -24,22 +24,30 @@ async function handle(req, res) {
 }
 
 async function handlePost(data, res) {
-  const { sourceZip, organizeData, collection } = data;
-  const { footprint, localtion } = await _unzipAssets(
-    sourceZip
-  );
-  const { layersOrder, layersDir } = _createLayers(
-    footprint,
-    localtion,
-    organizeData
-  );
-  const layerConfig = {
-    growEditionSizeTo: collection.total,
-    layersOrder: layersOrder,
-  };
-  const outputPath = await _generate(layerConfig, collection, layersDir, footprint);
-  const previewGif = await _generatePreviewGif(footprint);
-  res.status(200).json({ preview: previewGif, footprint:footprint });
+  const { sourceZip, organizeData, collection, currentprint } = data;
+  if ( currentprint == "") {
+    const { footprint, localtion } = await _unzipAssets(
+      sourceZip
+    );
+    const { layersOrder, layersDir } = _createLayers(
+      footprint,
+      localtion,
+      organizeData
+    );
+    const layerConfig = {
+      growEditionSizeTo: parseInt(collection.total),
+      layersOrder: layersOrder,
+    };
+    // const outputPath = await _generate(layerConfig, collection, layersDir, footprint);
+    console.log("total:", layerConfig.growEditionSizeTo);
+    const outputPath = _generateAsync(layerConfig, collection, layersDir, footprint);
+    const previewGif = await _generatePreviewGif(footprint);
+    res.status(200).json({ preview: previewGif, footprint:footprint });
+  }
+  else {
+    const previewGif = await _generatePreviewGif(currentprint);
+    res.status(200).json({ preview: previewGif, footprint:currentprint });
+  }
 }
 
 async function _unzipAssets(filename) {
@@ -137,6 +145,19 @@ async function _generate(layersConfig, collection, layersDir, footprint) {
 }
 
 
+async function _generateAsync(layersConfig, collection, layersDir, footprint) {
+  const engine = new HashLipEngine(
+    layersConfig,
+    collection,
+    layersDir,
+    footprint
+  );
+  engine.buildSetup();
+  engine.startCreatingAsync(layersConfig, collection, layersDir);
+  return engine.getBuildDir();
+}
+
+
 async function _generatePreview(footprint) {
   // const paths = _fetchFilePath(outputBuild);
   const hashLipPreview = new HashLipPreview(
@@ -161,6 +182,10 @@ async function _generatePreviewGif(footprint) {
   // fse.copyFileSync(gif,`${publicDir}/${footprint}_${imageName}`);
   // console.log(gif, `${publicDir}/${footprint}_${imageName}`)
   // return `${footprint}_${imageName}`;
+
+  if (!gif) {
+    return "not yet";
+  }
 
   const response = await Cloudinary.upload(gif);
   // console.log(response);

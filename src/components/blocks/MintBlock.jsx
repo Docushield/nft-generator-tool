@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import PrimaryButton from "@/components/ui/PrimaryButton";
+import SecondaryButton from "@/components/ui/SecondaryButton";
 import ProgressBar from "@/components/ui/ProgressBar";
 import iconEdit from "@/assets/icon-edit.png";
 import axios from "axios";
@@ -16,6 +17,7 @@ export default function MintBlock() {
   const [previewing, setPreview] = useState(false);
   const [footprint, setFootprint] = useState("");
   const [previewImageUrl, setPreviewImageUrl] = useState('/preview.png');
+  const [previewBtnTxt, setPreviewBtnTxt] = useState('preview');
   const [progressPercentage, setProgressPercentage] = useState(10);
   const formHandler = (e) => {
     e.preventDefault();
@@ -83,6 +85,7 @@ export default function MintBlock() {
       collection: collection,
       organizeData: organizeData,
       sourceZip: sourceZip,
+      currentprint:footprint
     };
     const url = await axios.post("/api/preview", payload).then((response) => {
       if (response.status == 200) {
@@ -94,7 +97,13 @@ export default function MintBlock() {
       }
     });
     setPreview(false);
-    setPreviewImageUrl(url);
+    if ("not yet" !== url) {
+      setPreviewImageUrl(url);
+      setPreviewBtnTxt("preview");
+    }
+    else {
+      setPreviewBtnTxt(`${url}, try later`);
+    }
   };
 
   const generateOutputfile = async () => {
@@ -330,16 +339,16 @@ export default function MintBlock() {
               alt="preview"
               className="p-6 w-64 h-72"
             />
-            <div
-              className="border-t border-zinc-300 py-5"
+            <SecondaryButton
+              className="border-t border-zinc-300 py-5 text-neutral-50 uppercase w-full  outline-1 rounded-md shadow-md"
               onClick={(e) => {
                 generatePreviewHandler(e);
               }}
             >
-              <span className="uppercase text-gray my-2 font-medium">
-                preview
+              <span className="uppercase my-2 font-medium">
+                {previewBtnTxt}
               </span>
-            </div>
+            </SecondaryButton>
           </div>
           <div className="w-full">
             <PrimaryButton

@@ -46,6 +46,7 @@ class HashLipPreview {
       console.log(
         `You do not have enough images to create a gif with ${numberOfImages} images.`
       );
+      return false;
     } else {
       // Shout from the mountain tops
       console.log(

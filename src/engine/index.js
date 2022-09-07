@@ -1,5 +1,6 @@
 import { NETWORK } from "@/constants/network";
 const fs = require("fs");
+import async from 'async';
 import crypto from "crypto";
 import sha1 from "sha1";
 import { createCanvas, loadImage } from "canvas";
@@ -29,18 +30,82 @@ var attributesList = [];
 var dnaList = new Set();
 const DNA_DELIMITER = "-";
 import HashlipsGiffer from "@/modules/HashlipsGiffer";
+import _ from "lodash";
 
 let hashlipsGiffer = null;
 
 
 
+const queueWorker = async (task) => {
+  const { idx, hdl, collection, layersDir, config } = task;
+  const buildDir = hdl.getBuildDir();
+  const layers = hdl.layersSetup(config.layersOrder, layersDir);
+  let newDna = hdl.createDna(layers);
+  if (hdl.isDnaUnique(dnaList, newDna)) {
+      let results = hdl.constructLayerToDna(newDna, layers);
+      let loadedElements = [];
 
+      results.forEach((layer) => {
+        loadedElements.push(hdl.loadLayerImg(layer));
+      });
+
+      await Promise.all(loadedElements).then((renderObjectArray) => {
+        debugLogs ? console.log("Clearing canvas") : null;
+        ctx.clearRect(0, 0, format.width, format.height);
+        if (gif.export) {
+          hashlipsGiffer = new HashlipsGiffer(
+            canvas,
+            ctx,
+            `${buildDir}/gifs/${idx}.gif`,
+            gif.repeat,
+            gif.quality,
+            gif.delay
+          );
+          hashlipsGiffer.start();
+        }
+        if (background.generate) {
+          hdl.drawBackground();
+        }
+        renderObjectArray.forEach((renderObject, index) => {
+          hdl.drawElement(renderObject, index, config.layersOrder.length);
+          if (gif.export) {
+            hashlipsGiffer.add();
+          }
+        });
+        if (gif.export) {
+          hashlipsGiffer.stop();
+        }
+          hdl.saveImage(idx);
+          hdl.addMetadata(newDna, idx, collection);
+          hdl.saveMetaDataSingleFile(idx);
+        console.log(
+          `Created edition: ${idx}, with DNA: ${sha1(newDna)}`
+        );
+      });
+      dnaList.add(hdl.filterDNAOptions(newDna));
+    } else {
+      console.log("DNA exists!");
+      failedCount++;
+      if (failedCount >= uniqueDnaTorrance) {
+        console.log(
+          `You need more layers or elements to grow your edition to ${config.growEditionSizeTo} artworks!`
+        );
+      }
+    }
+  
+
+
+}
 class HashLipEngine {
   constructor(layersConfig, collection, layersDir, footprint) {
     this.layersConfig = layersConfig;
     this.collection = collection;
     this.layersDir = layersDir;
     this.footprint = footprint;
+    this.queue = async.queue(async function(task, callback) {
+      await queueWorker(task);
+      callback();
+    }, 100);
   }
 
   buildSetup = () => {
@@ -106,7 +171,7 @@ class HashLipEngine {
   };
   
   layersSetup = (layersOrder, layersDir) => {
-    console.log("layersSetup:", layersOrder, layersDir);
+    // console.log("layersSetup:", layersOrder, layersDir);
     const layers = layersOrder.map((layerObj, index) => ({
       id: index,
       elements: this.getElements(`${layersDir}/${layerObj.name}/`),
@@ -499,6 +564,44 @@ class HashLipEngine {
   
     this.writeMetaData(JSON.stringify(metadataList, null, 2));
     this.writeCollectionData(JSON.stringify(collectiondata, null, 2));
+  };
+
+  startCreatingAsync = async (config, collection, layersDir) => {
+    const buildDir = this.getBuildDir();
+    let abstractedIndexes = [];
+    for (
+      let i = network == NETWORK.sol ? 0 : 1;
+      i <= config.growEditionSizeTo;
+      i++
+    ) {
+      abstractedIndexes.push(i);
+    }
+    if (shuffleLayerConfigurations) {
+      abstractedIndexes = this.shuffle(abstractedIndexes);
+    }
+    debugLogs
+      ? console.log("Editions left to create: ", abstractedIndexes)
+      : null;
+
+      const taskCtxs = abstractedIndexes.map(idx => {
+        const ctx = {};
+        ctx.idx = idx;
+        ctx.hdl = this;
+        ctx.collection = collection;
+        ctx.layersDir = layersDir;
+        ctx.config = config;
+        return ctx;
+      })
+      this.queue.push(taskCtxs, function (err) {
+        // console.log('sucessfully');
+      });
+      this.queue.drain(() => {
+        this.writeMetaData(JSON.stringify(metadataList, null, 2));
+        this.writeCollectionData(JSON.stringify(collectiondata, null, 2));
+        console.log('all items have been processed');
+      })  
+    // this.writeMetaData(JSON.stringify(metadataList, null, 2));
+    // this.writeCollectionData(JSON.stringify(collectiondata, null, 2));
   };
 }
 
