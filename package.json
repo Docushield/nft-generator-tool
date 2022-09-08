@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "NODE_OPTIONS='--inspect' next start",
+    "start": "next start",
     "lint": "next lint",
     "build-clean": "rimraf .next"
   },
