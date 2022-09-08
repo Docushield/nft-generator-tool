@@ -39,8 +39,9 @@ async function handlePost(data, res) {
       layersOrder: layersOrder,
     };
     // const outputPath = await _generate(layerConfig, collection, layersDir, footprint);
-    console.log("total:", layerConfig.growEditionSizeTo);
-    const outputPath = _generateAsync(layerConfig, collection, layersDir, footprint);
+    // console.log("total:", layerConfig.growEditionSizeTo);
+    // const outputPath = _generateAsync(layerConfig, collection, layersDir, footprint);
+    const outputPath = _generate(layerConfig, collection, layersDir, footprint);
     const previewGif = await _generatePreviewGif(footprint);
     res.status(200).json({ preview: previewGif, footprint:footprint });
   }
