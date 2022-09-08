@@ -20,28 +20,15 @@ import {
   solanaMetadata,
   gif,
 } from "@/config/index";
-const canvas = createCanvas(format.width, format.height);
-const ctx = canvas.getContext("2d");
-ctx.imageSmoothingEnabled = format.smoothing;
-var metadataList = [];
-var tokenList = [];
-var collectiondata = {};
-var attributesList = [];
-var dnaList = new Set();
 const DNA_DELIMITER = "-";
 import HashlipsGiffer from "@/modules/HashlipsGiffer";
 import _ from "lodash";
-
-let hashlipsGiffer = null;
-
-
-
 const queueWorker = async (task) => {
   const { idx, hdl, collection, layersDir, config } = task;
   const buildDir = hdl.getBuildDir();
   const layers = hdl.layersSetup(config.layersOrder, layersDir);
   let newDna = hdl.createDna(layers);
-  if (hdl.isDnaUnique(dnaList, newDna)) {
+  if (hdl.isDnaUnique(hdl.dnaList, newDna)) {
       let results = hdl.constructLayerToDna(newDna, layers);
       let loadedElements = [];
 
@@ -51,17 +38,17 @@ const queueWorker = async (task) => {
 
       await Promise.all(loadedElements).then((renderObjectArray) => {
         debugLogs ? console.log("Clearing canvas") : null;
-        ctx.clearRect(0, 0, format.width, format.height);
+        hdl.ctx.clearRect(0, 0, format.width, format.height);
         if (gif.export) {
-          hashlipsGiffer = new HashlipsGiffer(
-            canvas,
-            ctx,
+          hdl.hashlipsGiffer = new HashlipsGiffer(
+            hdl.canvas,
+            hdl.ctx,
             `${buildDir}/gifs/${idx}.gif`,
             gif.repeat,
             gif.quality,
             gif.delay
           );
-          hashlipsGiffer.start();
+          hdl.hashlipsGiffer.start();
         }
         if (background.generate) {
           hdl.drawBackground();
@@ -69,11 +56,11 @@ const queueWorker = async (task) => {
         renderObjectArray.forEach((renderObject, index) => {
           hdl.drawElement(renderObject, index, config.layersOrder.length);
           if (gif.export) {
-            hashlipsGiffer.add();
+            hdl.hashlipsGiffer.add();
           }
         });
         if (gif.export) {
-          hashlipsGiffer.stop();
+          hdl.hashlipsGiffer.stop();
         }
           hdl.saveImage(idx);
           hdl.addMetadata(newDna, idx, collection);
@@ -82,7 +69,7 @@ const queueWorker = async (task) => {
           `Created edition: ${idx}, with DNA: ${sha1(newDna)}`
         );
       });
-      dnaList.add(hdl.filterDNAOptions(newDna));
+      hdl.dnaList.add(hdl.filterDNAOptions(newDna));
     } else {
       console.log("DNA exists!");
       failedCount++;
@@ -106,6 +93,20 @@ class HashLipEngine {
       await queueWorker(task);
       callback();
     }, 100);
+
+    const canvas = createCanvas(format.width, format.height);
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = format.smoothing;
+
+    this.canvas = canvas;
+    this.ctx = ctx;
+
+    this.metadataList = [];
+    this.tokenList = [];
+    this.collectiondata = {};
+    this.attributesList = [];
+    this.dnaList = new Set();
+    this.hashlipsGiffer = null;
   }
 
   buildSetup = () => {
@@ -199,7 +200,7 @@ class HashLipEngine {
     const buildDir = this.getBuildDir();
     fs.writeFileSync(
       `${buildDir}/images/${_editionCount}.png`,
-      canvas.toBuffer("image/png")
+      this.canvas.toBuffer("image/png")
     );
   };
   
@@ -210,8 +211,8 @@ class HashLipEngine {
   };
   
   drawBackground = () => {
-    ctx.fillStyle = background.static ? background.default : this.genColor();
-    ctx.fillRect(0, 0, format.width, format.height);
+    this.ctx.fillStyle = background.static ? background.default : this.genColor();
+    this.ctx.fillRect(0, 0, format.width, format.height);
   };
   
   addMetadata = (_dna, _edition, _collection) => {
@@ -236,7 +237,7 @@ class HashLipEngine {
       spec: {
         type: "normal",
         value: {
-          attributes: attributesList,
+          attributes: this.attributesList,
         },
       },
       "collection-name": collectionName,
@@ -280,14 +281,14 @@ class HashLipEngine {
         },
       };
     }
-    metadataList.push(tempMetadata);
+    this.metadataList.push(tempMetadata);
     
     let tempTokendata = {
       hash:sha256hash,
       spec: {
         type:"normal",
         value: {
-          attributes:attributesList,
+          attributes:this.attributesList,
         },
       },
       "content_uri": {
@@ -295,8 +296,8 @@ class HashLipEngine {
         data: "CID",
       }
     }
-    tokenList.push(tempTokendata);
-    collectiondata = {
+    this.tokenList.push(tempTokendata);
+    this.collectiondata = {
       creator: creator,
       description: description,
       name: collectionName,
@@ -304,18 +305,18 @@ class HashLipEngine {
       "mint-starts": mintStart,
       "premint-ends": premintEnd,
       size: parseInt(total),
-      "tokens": tokenList,
+      "tokens": this.tokenList,
       "mint_price": parseFloat(mintPrice),
       "mint-royalties": [],
       "sale-royalties": [],
       "premint-whitelist": whiteList,
     };
-    attributesList = [];
+    this.attributesList = [];
   };
   
   addAttributes = (_element) => {
     let selectedElement = _element.layer.selectedElement;
-    attributesList.push({
+    this.attributesList.push({
       trait_type: _element.layer.name,
       value: selectedElement.name,
     });
@@ -333,16 +334,16 @@ class HashLipEngine {
   };
   
   addText = (_sig, x, y, size) => {
-    ctx.fillStyle = text.color;
-    ctx.font = `${text.weight} ${size}pt ${text.family}`;
-    ctx.textBaseline = text.baseline;
-    ctx.textAlign = text.align;
-    ctx.fillText(_sig, x, y);
+    this.ctx.fillStyle = text.color;
+    this.ctx.font = `${text.weight} ${size}pt ${text.family}`;
+    this.ctx.textBaseline = text.baseline;
+    this.ctx.textAlign = text.align;
+    this.ctx.fillText(_sig, x, y);
   };
   
   drawElement = (_renderObject, _index, _layersLen) => {
-    ctx.globalAlpha = _renderObject.layer.opacity;
-    ctx.globalCompositeOperation = _renderObject.layer.blend;
+    this.ctx.globalAlpha = _renderObject.layer.opacity;
+    this.ctx.globalCompositeOperation = _renderObject.layer.blend;
     text.only
       ? this.addText(
           `${_renderObject.layer.name}${text.spacer}${_renderObject.layer.selectedElement.name}`,
@@ -350,7 +351,7 @@ class HashLipEngine {
           text.yGap * (_index + 1),
           text.size
         )
-      : ctx.drawImage(
+      : this.ctx.drawImage(
           _renderObject.loadedImage,
           0,
           0,
@@ -457,7 +458,7 @@ class HashLipEngine {
   
   saveMetaDataSingleFile = (_editionCount) => {
     const buildDir = this.getBuildDir();
-    let metadata = metadataList.find((meta) => meta.edition == _editionCount);
+    let metadata = this.metadataList.find((meta) => meta.edition == _editionCount);
     debugLogs
       ? console.log(
           `Writing metadata for ${_editionCount}: ${JSON.stringify(metadata)}`
@@ -504,7 +505,7 @@ class HashLipEngine {
     const layers = this.layersSetup(config.layersOrder, layersDir);
     while (editionCount <= config.growEditionSizeTo) {
       let newDna = this.createDna(layers);
-      if (this.isDnaUnique(dnaList, newDna)) {
+      if (this.isDnaUnique(this.dnaList, newDna)) {
         let results = this.constructLayerToDna(newDna, layers);
         let loadedElements = [];
   
@@ -514,17 +515,17 @@ class HashLipEngine {
   
         await Promise.all(loadedElements).then((renderObjectArray) => {
           debugLogs ? console.log("Clearing canvas") : null;
-          ctx.clearRect(0, 0, format.width, format.height);
+          this.ctx.clearRect(0, 0, format.width, format.height);
           if (gif.export) {
-            hashlipsGiffer = new HashlipsGiffer(
-              canvas,
-              ctx,
+            this.hashlipsGiffer = new HashlipsGiffer(
+              this.canvas,
+              this.ctx,
               `${buildDir}/gifs/${abstractedIndexes[0]}.gif`,
               gif.repeat,
               gif.quality,
               gif.delay
             );
-            hashlipsGiffer.start();
+            this.hashlipsGiffer.start();
           }
           if (background.generate) {
             this.drawBackground();
@@ -532,11 +533,11 @@ class HashLipEngine {
           renderObjectArray.forEach((renderObject, index) => {
             this.drawElement(renderObject, index, config.layersOrder.length);
             if (gif.export) {
-              hashlipsGiffer.add();
+              this.hashlipsGiffer.add();
             }
           });
           if (gif.export) {
-            hashlipsGiffer.stop();
+            this.hashlipsGiffer.stop();
           }
           debugLogs
             ? console.log("Editions left to create: ", abstractedIndexes)
@@ -548,7 +549,7 @@ class HashLipEngine {
             `Created edition: ${abstractedIndexes[0]}, with DNA: ${sha1(newDna)}`
           );
         });
-        dnaList.add(this.filterDNAOptions(newDna));
+        this.dnaList.add(this.filterDNAOptions(newDna));
         editionCount++;
         abstractedIndexes.shift();
       } else {
@@ -562,8 +563,8 @@ class HashLipEngine {
       }
     }
   
-    this.writeMetaData(JSON.stringify(metadataList, null, 2));
-    this.writeCollectionData(JSON.stringify(collectiondata, null, 2));
+    this.writeMetaData(JSON.stringify(this.metadataList, null, 2));
+    this.writeCollectionData(JSON.stringify(this.collectiondata, null, 2));
   };
 
   startCreatingAsync = async (config, collection, layersDir) => {
@@ -596,12 +597,12 @@ class HashLipEngine {
         // console.log('sucessfully');
       });
       this.queue.drain(() => {
-        this.writeMetaData(JSON.stringify(metadataList, null, 2));
-        this.writeCollectionData(JSON.stringify(collectiondata, null, 2));
+        this.writeMetaData(JSON.stringify(this.metadataList, null, 2));
+        this.writeCollectionData(JSON.stringify(this.collectiondata, null, 2));
         console.log('all items have been processed');
       })  
-    // this.writeMetaData(JSON.stringify(metadataList, null, 2));
-    // this.writeCollectionData(JSON.stringify(collectiondata, null, 2));
+    // this.writeMetaData(JSON.stringify(this.metadataList, null, 2));
+    // this.writeCollectionData(JSON.stringify(this.collectiondata, null, 2));
   };
 }
 

@@ -1,12 +1,9 @@
 const fs = require("fs");
 const { createCanvas, loadImage } = require("canvas");
 import { preview, preview_gif, format } from "@/config/index";
-const canvas = createCanvas(format.width, format.height);
-const ctx = canvas.getContext("2d");
 
 
 import HashlipsGiffer from "@/modules/HashlipsGiffer";
-let hashlipsGiffer = null;
 
 const loadImg = async (_img) => {
   return new Promise(async (resolve) => {
@@ -23,6 +20,11 @@ class HashLipPreview {
     this.buildDir = buildDir;
     this.imageDir = `${buildDir}/images`;
     this.jsonDir = `${buildDir}/json`;
+    const canvas = createCanvas(format.width, format.height);
+    const ctx = canvas.getContext("2d");
+    this.ctx = ctx;
+    this.canvas = canvas;
+    this.hashlipsGiffer = null;
   }
 
   async previewGif() {
@@ -54,17 +56,17 @@ class HashLipPreview {
       );
       const previewPath = `${buildDir}/${imageName}`;
 
-      ctx.clearRect(0, 0, width, height);
+      this.ctx.clearRect(0, 0, width, height);
 
-      hashlipsGiffer = new HashlipsGiffer(
-        canvas,
-        ctx,
+      this.hashlipsGiffer = new HashlipsGiffer(
+        this.canvas,
+        this.ctx,
         `${previewPath}`,
         repeat,
         quality,
         delay
       );
-      hashlipsGiffer.start();
+      this.hashlipsGiffer.start();
 
       await Promise.all(imageList).then((renderObjectArray) => {
         // console.log("renderObjectArray:", renderObjectArray);
@@ -83,19 +85,19 @@ class HashLipPreview {
         }
 
         renderObjectArray.forEach((renderObject, index) => {
-          ctx.globalAlpha = 1;
-          ctx.globalCompositeOperation = "source-over";
-          ctx.drawImage(
+          this.ctx.globalAlpha = 1;
+          this.ctx.globalCompositeOperation = "source-over";
+          this.ctx.drawImage(
             renderObject.loadedImage,
             0,
             0,
             previewCanvasWidth,
             previewCanvasHeight
           );
-          hashlipsGiffer.add();
+          this.hashlipsGiffer.add();
         });
       });
-      hashlipsGiffer.stopSync();
+      this.hashlipsGiffer.stopSync();
       return previewPath;
     }
   }
