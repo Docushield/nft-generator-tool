@@ -30,7 +30,7 @@ export default function AssetBlock() {
         originalItem.File = file;
         originalItem.path = file.webkitRelativePath;
         originalItem.fileHash = hash
-        console.log(originalItem.fileHash);
+        // console.log(originalItem.fileHash);
         originalData.push(originalItem);
 
         const idx = _.findIndex(organizeData, (item) => {

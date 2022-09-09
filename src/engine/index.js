@@ -3,7 +3,9 @@ const fs = require("fs");
 import async from 'async';
 import crypto from "crypto";
 import sha1 from "sha1";
+import blake2b from "blake2b";
 import { createCanvas, loadImage } from "canvas";
+import NftStorage from "@/modules/NftStorage";
 import {
   format,
   baseUri,
@@ -215,7 +217,7 @@ class HashLipEngine {
     this.ctx.fillRect(0, 0, format.width, format.height);
   };
   
-  addMetadata = (_dna, _edition, _collection) => {
+  addMetadata = async (_dna, _edition, _collection) => {
     const buildDir = this.getBuildDir();
     const {
       collectionName,
@@ -246,7 +248,7 @@ class HashLipEngine {
         data: "CID",
       },
       "marmalade-token-id": "",
-      image: `${baseUri}/${_edition}.png`,
+      // image: `${baseUri}/${_edition}.png`,
       dna: sha1(_dna),
       edition: _edition,
       creator: creator,
@@ -281,6 +283,10 @@ class HashLipEngine {
         },
       };
     }
+
+    const cid = await NftStorage.storeNFT(`${buildDir}/images/${_edition}.png`);
+    tempMetadata["content-uri"].scheme = `ipfs://${cid}`
+    tempMetadata["content-uri"].data = cid;
     this.metadataList.push(tempMetadata);
     
     let tempTokendata = {
@@ -292,8 +298,8 @@ class HashLipEngine {
         },
       },
       "content_uri": {
-        scheme: "ipfs://",
-        data: "CID",
+        scheme: `ipfs://${cid}`,
+        data: cid,
       }
     }
     this.tokenList.push(tempTokendata);
@@ -455,6 +461,20 @@ class HashLipEngine {
     const buildDir = this.getBuildDir();
     fs.writeFileSync(`${buildDir}/json/nft-collection.json`, _data);
   };
+
+  calcProvenanceHash = (nfts) => {
+    let hashList = [];
+    let output = new Uint8Array(32) // 256 bit
+    nfts.forEach(nft => {
+      let input = Buffer.from(JSON.stringify(nft));
+      const singleHash = blake2b(output.length).update(input).digest('hex');
+      hashList.push(singleHash);
+    })
+    let input = Buffer.from(JSON.stringify(hashList.sort()));
+    const hash = blake2b(output.length).update(input).digest('hex');
+    console.log('hash:', hash);
+    return hash;
+  }
   
   saveMetaDataSingleFile = (_editionCount) => {
     const buildDir = this.getBuildDir();
@@ -513,7 +533,7 @@ class HashLipEngine {
           loadedElements.push(this.loadLayerImg(layer));
         });
   
-        await Promise.all(loadedElements).then((renderObjectArray) => {
+        await Promise.all(loadedElements).then(async(renderObjectArray) => {
           debugLogs ? console.log("Clearing canvas") : null;
           this.ctx.clearRect(0, 0, format.width, format.height);
           if (gif.export) {
@@ -543,7 +563,7 @@ class HashLipEngine {
             ? console.log("Editions left to create: ", abstractedIndexes)
             : null;
           this.saveImage(abstractedIndexes[0]);
-          this.addMetadata(newDna, abstractedIndexes[0], collection);
+          await this.addMetadata(newDna, abstractedIndexes[0], collection);
           this.saveMetaDataSingleFile(abstractedIndexes[0]);
           console.log(
             `Created edition: ${abstractedIndexes[0]}, with DNA: ${sha1(newDna)}`
@@ -564,6 +584,7 @@ class HashLipEngine {
     }
   
     this.writeMetaData(JSON.stringify(this.metadataList, null, 2));
+    this.collectiondata["provenance-hash"] = this.calcProvenanceHash(this.collectiondata.tokens);
     this.writeCollectionData(JSON.stringify(this.collectiondata, null, 2));
   };
 
@@ -598,6 +619,7 @@ class HashLipEngine {
       });
       this.queue.drain(() => {
         this.writeMetaData(JSON.stringify(this.metadataList, null, 2));
+        this.collectiondata["provenance-hash"] = this.calcProvenanceHash(this.collectiondata.tokens);
         this.writeCollectionData(JSON.stringify(this.collectiondata, null, 2));
         console.log('all items have been processed');
       })  

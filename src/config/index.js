@@ -16,6 +16,10 @@ const cloudinary = {
   api_secret: process.env.RESAPISECRET 
 }
 
+const nftStorage = {
+  apikey: process.env.NFTSTORAGETOKEN
+}
+
 
 const solanaMetadata = {
   symbol: "YC",
@@ -100,7 +104,7 @@ const preview = {
 };
 
 const preview_gif = {
-  numberOfImages: 5,
+  numberOfImages: 3,
   order: "ASC", // ASC, DESC, MIXED
   repeat: 0,
   quality: 100,
@@ -113,7 +117,6 @@ const kaleidoNet = {
   apiSercet:process.env.NEXT_APP_AH,
   downloadURI:"/api/v0/cat/{cid}",
   uploadURI:"/api/v0/add",
-  testCID:process.env.NEXT_CID
 }
 
 module.exports = {
@@ -137,4 +140,5 @@ module.exports = {
   preview_gif,
   kaleidoNet,
   cloudinary,
+  nftStorage
 };

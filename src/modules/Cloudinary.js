@@ -10,7 +10,6 @@ class Cloudinary {
       api_secret: config.cloudinary.api_secret,
     });
     this.cloudinaryInstance = cloudinary;
-    Cloudinary.instance = this;
   }
 
   static getInstance() {
