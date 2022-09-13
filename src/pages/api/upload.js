@@ -20,8 +20,8 @@ const handle = async (req, res) => {
     // console.log(err, fields, files);
     const [filename, fileHdl]= Object.entries(files)[0];
     // console.log("filename:", filename, "file:", fileHdl);
-    fs.renameSync(fileHdl.filepath,`${fileHdl.filepath}.zip`);
-    res.status(200).json({filename: path.basename(`${fileHdl.filepath}.zip`)});
+    fs.renameSync(fileHdl.filepath,`${uploadDir}/${fileHdl.newFilename}.zip`);
+    res.status(200).json({filename: `${fileHdl.newFilename}.zip`});
   });
 };
 
