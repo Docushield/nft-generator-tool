@@ -232,10 +232,11 @@ class HashLipEngine {
       premintEnd,
     } = _collection;
     const sha256hash = crypto.createHash("sha256").update(fs.readFileSync(`${buildDir}/images/${_edition}.png`)).digest("hex")
+    const base64hash = Buffer.from(sha256hash).toString('base64')
     let tempMetadata = {
       name: `${collectionName} #${_edition}`,
       description: description,
-      "content-hash": sha256hash,
+      "content-hash": base64hash,
       spec: {
         type: "normal",
         value: {
@@ -290,7 +291,7 @@ class HashLipEngine {
     this.metadataList.push(tempMetadata);
     
     let tempTokendata = {
-      hash:sha256hash,
+      hash:base64hash,
       spec: {
         type:"normal",
         value: {
