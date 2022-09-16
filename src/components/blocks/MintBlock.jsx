@@ -32,10 +32,10 @@ export default function MintBlock() {
     console.log("value:", e.target.value, "name:", e.target.name);
   };
 
-  const mintTypeHandler = (e) => {
-    e.preventDefault();
-    setMintType(e.target.value);
-    collection.mintType = e.target.value;
+  const mintTypeHandler = (mintType) => {
+    // e.preventDefault();
+    setMintType(mintType);
+    collection.mintType = mintType;
     dispatch(updateCollection(collection));
   };
 
@@ -65,8 +65,8 @@ export default function MintBlock() {
   };
 
   const letsMintHandler = async () => {
-    collection.mintType = mintType;
-    dispatch(updateCollection(collection));
+    // collection.mintType = mintType;
+    // dispatch(updateCollection(collection));
 
     const rs = await generateOutputfile();
 
@@ -79,6 +79,9 @@ export default function MintBlock() {
 
   const generatePreviewHandler = async (e) => {
     if (previewing) return false;
+    // console.log("mintType:", mintType);
+    // collection.mintType = mintType;
+    // dispatch(updateCollection(collection));
 
     setPreview(true);
     const payload = {
@@ -181,7 +184,7 @@ export default function MintBlock() {
                   <input
                     type={"radio"}
                     className="mr-1"
-                    onChange={(e) => setMintType(e.target.value)}
+                    onChange={(e) => mintTypeHandler(e.target.value)}
                     defaultChecked={mintType === "private"}
                     value={"private"}
                     name={"mintTypeRadio"}
@@ -193,7 +196,7 @@ export default function MintBlock() {
                     type={"radio"}
                     className="mr-1"
                     defaultChecked={mintType == "public"}
-                    onChange={(e) => setMintType(e.target.value)}
+                    onChange={(e) => mintTypeHandler(e.target.value)}
                     value={"public"}
                     name={"mintTypeRadio"}
                   ></input>

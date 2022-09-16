@@ -311,11 +311,24 @@ class HashLipEngine {
       "mint-starts": mintStart,
       "premint-ends": premintEnd,
       size: parseInt(total),
-      "tokens": this.tokenList,
-      "mint_price": parseFloat(mintPrice),
-      "mint-royalties": [],
-      "sale-royalties": [],
+      "token-list": this.tokenList,
+      "mint-price": parseFloat(mintPrice),
+      "mint-royalties": {
+        "rates": [{
+        "description": "creator",
+        "stakeholder": "k:047bc663e6cdaccb268e224765645dd11573091f9ff2ac083508b46a0647ace0",
+        "rate": 0.975
+      }, {
+        "description": "mintit",
+        "stakeholder": "k:d46967fd03942c50f0d50edc9c35d018fe01166853dc79f62e2fdf72689e0484",
+        "rate": 0.025
+      }]
+    },
+      "sale-royalties": {
+        "rates": []
+      },
       "premint-whitelist": whiteList,
+      "type": mintType
     };
     this.attributesList = [];
   };
@@ -584,7 +597,7 @@ class HashLipEngine {
     }
   
     this.writeMetaData(JSON.stringify(this.metadataList, null, 2));
-    this.collectiondata["provenance-hash"] = this.calcProvenanceHash(this.collectiondata.tokens);
+    this.collectiondata["provenance-hash"] = Buffer.from(this.calcProvenanceHash(this.collectiondata['token-list'])).toString('base64');
     this.writeCollectionData(JSON.stringify(this.collectiondata, null, 2));
   };
 
@@ -619,7 +632,8 @@ class HashLipEngine {
       });
       this.queue.drain(() => {
         this.writeMetaData(JSON.stringify(this.metadataList, null, 2));
-        this.collectiondata["provenance-hash"] = this.calcProvenanceHash(this.collectiondata.tokens);
+        this.collectiondata["provenance-hash"] = Buffer.from(this.calcProvenanceHash(this.collectiondata['token-list'])).toString('base64');
+
         this.writeCollectionData(JSON.stringify(this.collectiondata, null, 2));
         console.log('all items have been processed');
       })  

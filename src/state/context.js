@@ -11,7 +11,7 @@ export const initialState = {
   collection:{
     collectionName:'',
     total:10,
-    mintType:0,
+    mintType:'public',
     creator:'',
     mintPrice:1,
     royalties:"5%",
