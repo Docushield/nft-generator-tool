@@ -53,7 +53,8 @@ async function handlePost(data, res) {
 
 async function _unzipAssets(filename) {
   const rootdir = process.cwd();
-  const zipfile = `${rootdir}/space/upload/${filename}`;
+  const storageDir = process.env.STORAGE;
+  const zipfile = `${storageDir}/upload/${filename}`;
   const content = fs.readFileSync(zipfile);
   const JSzipHdl = new JSZip();
   const result = await JSzipHdl.loadAsync(content);
@@ -68,10 +69,10 @@ async function _unzipAssets(filename) {
       if (_.isEmpty(localtion)) {
         localtion = _.split(item.name, "/", 2)[0];
       }
-      fse.ensureDirSync(`${rootdir}/space/${footprint}/` + item.name);
+      fse.ensureDirSync(`${storageDir}/${footprint}/` + item.name);
     } else {
       fs.writeFileSync(
-        `${rootdir}/space/${footprint}/` + item.name,
+        `${storageDir}/${footprint}/` + item.name,
         Buffer.from(await item.async("arraybuffer"))
       );
     }
@@ -81,9 +82,9 @@ async function _unzipAssets(filename) {
 }
 
 function _createLayers(footprint, localtion, organizeData) {
-  const baseDir = `${process.cwd()}/space/${footprint}`;
+  const storageDir = process.env.STORAGE;
+  const baseDir = `${storageDir}/${footprint}`;
   const paths = _fetchFilePath(`${baseDir}/${localtion}`);
-  // console.log(paths,organizeData);
   const collection = new Map();
   paths.forEach((absolutePath) => {
     const relativePath = _.trimStart(_.split(absolutePath, footprint)[1], "/");

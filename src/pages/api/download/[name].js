@@ -23,7 +23,8 @@ async function handle(req, res) {
   async function handleGet(query, res) {
     console.log("data:", query);
     const footprint = _.trimEnd(query.name,'.zip');
-    const filePath = path.join(process.cwd(), `/space/${footprint}/package.zip`);
+    const storageDir = process.env.STORAGE;
+    const filePath = path.join(storageDir, `/${footprint}/package.zip`);
     try {
       const zipBuffer = fs.readFileSync(filePath);
     //   console.log(zipBuffer)

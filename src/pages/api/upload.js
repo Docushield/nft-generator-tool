@@ -9,8 +9,8 @@ export const config = {
 };
 
 const handle = async (req, res) => {
-  const rootdir = process.cwd();
-  const uploadDir = `${rootdir}/space/upload/`
+  const storageDir = process.env.STORAGE;
+  const uploadDir = `${storageDir}/upload/`
   fse.ensureDirSync(uploadDir);
   const form = new formidable.IncomingForm();
   form.uploadDir = uploadDir;

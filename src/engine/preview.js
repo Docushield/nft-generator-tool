@@ -14,8 +14,8 @@ const loadImg = async (_img) => {
 
 class HashLipPreview {
   constructor(footprint) {
-    const basePath = process.cwd();
-    const buildDir = `${basePath}/space/${footprint}/build`;
+    const storageDir = process.env.STORAGE;
+    const buildDir = `${storageDir}/${footprint}/build`;
     this.footprint = footprint;
     this.buildDir = buildDir;
     this.imageDir = `${buildDir}/images`;

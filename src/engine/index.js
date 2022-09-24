@@ -112,9 +112,9 @@ class HashLipEngine {
   }
 
   buildSetup = () => {
-    const basePath = process.cwd();
     const footprint = this.footprint;
-    const buildDir = `${basePath}/space/${footprint}/build`;
+    const storageDir = process.env.STORAGE;
+    const buildDir = `${storageDir}/${footprint}/build`;
     if (fs.existsSync(buildDir)) {
       fs.rmdirSync(buildDir, { recursive: true });
     }

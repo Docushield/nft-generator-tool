@@ -26,8 +26,8 @@ async function handlePost(data, res) {
 }
 
 async function _zipOutputfile(footprint) {
-  const basePath = process.cwd();
-  const jsonDir = `${basePath}/space/${footprint}/build/json`;
+  const storageDir = process.env.STORAGE;
+  const jsonDir = `${storageDir}/${footprint}/build/json`;
 
   const paths = _fetchFilePath(jsonDir);
   // console.log("paths:", paths);
@@ -48,7 +48,8 @@ async function _zipOutputfile(footprint) {
         // but is piped here in a writable stream which emits a "finish" event.
         console.log("package.zip written.");
         const basedir = process.cwd();
-        fse.moveSync(`${basedir}/package.zip`, `${basedir}/space/${footprint}/package.zip`, {overwrite:true})
+        const storageDir = process.env.STORAGE;
+        fse.moveSync(`${basedir}/package.zip`, `${storageDir}/${footprint}/package.zip`, {overwrite:true})
         resolve({footprint, downzip:'package.zip'});
       });
   });
