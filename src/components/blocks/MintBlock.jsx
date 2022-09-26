@@ -65,37 +65,23 @@ export default function MintBlock() {
   };
 
   const letsMintHandler = async () => {
-    // collection.mintType = mintType;
-    // dispatch(updateCollection(collection));
-
-    const rs = await generateOutputfile();
-
-    if (rs.status == 200) {
-      console.log(rs.data);
-      const { footprint, downzip } = rs.data;
-      await downloadOutputFile(footprint);
-    }
+    const footprint = await generateOutputfile();
+    await downloadOutputFile(footprint);
   };
 
   const generatePreviewHandler = async (e) => {
     if (previewing) return false;
-    // console.log("mintType:", mintType);
-    // collection.mintType = mintType;
-    // dispatch(updateCollection(collection));
-
     setPreview(true);
     const payload = {
       collection: collection,
       organizeData: organizeData,
-      sourceZip: sourceZip,
-      currentprint:footprint
+      sourceZip: sourceZip
     };
     const url = await axios.post("/api/preview", payload).then((response) => {
       if (response.status == 200) {
-        const { footprint, preview } = response.data;
+        const { preview } = response.data;
         const url = `${preview}`;
         console.log("url:", url);
-        setFootprint(footprint);
         return url;
       }
     });
@@ -111,11 +97,18 @@ export default function MintBlock() {
 
   const generateOutputfile = async () => {
     const payload = {
-      footprint: footprint,
+      collection: collection,
+      organizeData: organizeData,
+      sourceZip: sourceZip
     };
-    const res = await axios.post("/api/generate", payload);
-    console.log(res);
-    return res;
+    const footprint = await axios.post("/api/generate", payload).then((response) => {
+      if (response.status == 200) {
+        const { footprint } = response.data;
+        console.log("footprint:", footprint);
+        return footprint;
+      }
+    });
+    return footprint;
   };
 
   const downloadOutputFile = async (footprint) => {

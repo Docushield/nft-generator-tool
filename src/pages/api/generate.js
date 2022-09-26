@@ -1,10 +1,10 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import JSZip from "jszip";
 import fs from "fs";
-import path from "path";
 import _ from "lodash";
 import fse from "fs-extra";
 import { _fetchFilePath } from "@/utils/helper";
+import axios from "axios";
 async function handle(req, res) {
   const { method, body } = req;
   switch (method) {
@@ -19,9 +19,16 @@ async function handle(req, res) {
 }
 
 async function handlePost(data, res) {
-  const { footprint} = data;
+  // const { sourceZip, organizeData, collection} = data;
+  const cbackserver = process.env.GENERATORSERVER
+  const footprint = await axios.post(`${cbackserver}/generate`, data).then((response) => {
+    if (response.status == 200) {
+      const { footprint } = response.data;
+      console.log("footprint:", footprint);
+      return footprint;
+    }
+  });
   const zipfile = await _zipOutputfile(footprint);
-  console.log(footprint,zipfile);
   res.status(200).json(zipfile);
 }
 
