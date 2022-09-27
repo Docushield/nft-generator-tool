@@ -311,7 +311,7 @@ class HashLipEngine {
       "provenance-hash": "",
       "mint-starts": mintStart,
       "premint-ends": premintEnd,
-      size: parseInt(total),
+      size: total,
       "token-list": this.tokenList,
       "mint-price": parseFloat(mintPrice),
       "mint-royalties": {

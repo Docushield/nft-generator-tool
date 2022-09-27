@@ -8,6 +8,7 @@ import axios from "axios";
 import { useAppContext } from "@/state/context";
 import { updateCollection } from "@/state/actions";
 import moment from "moment";
+import { array } from "prop-types";
 export default function MintBlock() {
   const { state, dispatch } = useAppContext();
   const { collection, organizeData, sourceZip } = state;
@@ -26,7 +27,14 @@ export default function MintBlock() {
   const inputChangeHandler = (e) => {
     e.preventDefault();
     console.log("value:", e.target.value, "name:", e.target.name);
-    collection[e.target.name] = e.target.value;
+    let tags = ["mintPrice", "total"];
+    if (tags.includes(e.target.name)) {
+      collection[e.target.name] = parseInt(e.target.value);
+    }
+    else {
+      collection[e.target.name] = e.target.value;
+    }
+    
     dispatch(updateCollection(collection));
     console.log(collection);
     console.log("value:", e.target.value, "name:", e.target.name);
