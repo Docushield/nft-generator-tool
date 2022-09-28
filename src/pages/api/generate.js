@@ -51,10 +51,10 @@ async function _buildOutputfile(footprint) {
   let tokenHashs = [];
   for (let it = 0; it < tokenList.length; it++) {
     let token = tokenList[it];
-    const cid = await ipfsOnlyHash.of(fs.readFileSync(token.hash));
+    const cid = await ipfsOnlyHash.of(fs.readFileSync(token.hash),{cidVersion:1});
     // console.log("cid:",cid);
     token.content_uri = {
-      scheme: `ipfs://${cid}`,
+      scheme: "ipfs://",
       data: cid,
     };
     // const sha256hash = crypto.createHash("sha256").update(fs.readFileSync(token.hash)).digest("hex")

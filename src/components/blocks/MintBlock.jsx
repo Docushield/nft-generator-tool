@@ -8,7 +8,6 @@ import axios from "axios";
 import { useAppContext } from "@/state/context";
 import { updateCollection } from "@/state/actions";
 import moment from "moment";
-import { array } from "prop-types";
 export default function MintBlock() {
   const { state, dispatch } = useAppContext();
   const { collection, organizeData, sourceZip } = state;
@@ -16,7 +15,6 @@ export default function MintBlock() {
   const [mintType, setMintType] = useState("public");
   const [fileContent, setFileContent] = useState("");
   const [previewing, setPreview] = useState(false);
-  const [footprint, setFootprint] = useState("");
   const [previewImageUrl, setPreviewImageUrl] = useState('/preview.png');
   const [previewBtnTxt, setPreviewBtnTxt] = useState('preview');
   const [progressPercentage, setProgressPercentage] = useState(10);
@@ -29,7 +27,13 @@ export default function MintBlock() {
     console.log("value:", e.target.value, "name:", e.target.name);
     let tags = ["mintPrice", "total"];
     if (tags.includes(e.target.name)) {
-      collection[e.target.name] = parseInt(e.target.value);
+      if ("mintPrice" == e.target.name) {
+        collection[e.target.name] = parseFloat(e.target.value);
+        console.log("mintPrice:",collection[e.target.name]);
+      } else {
+        collection[e.target.name] = parseInt(e.target.value);
+      }
+      
     }
     else {
       collection[e.target.name] = e.target.value;
