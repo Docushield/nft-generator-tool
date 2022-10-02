@@ -28,7 +28,7 @@ export default function MintBlock() {
     let tags = ["mintPrice", "total"];
     if (tags.includes(e.target.name)) {
       if ("mintPrice" == e.target.name) {
-        collection[e.target.name] = parseFloat(e.target.value);
+        collection[e.target.name] =  parseFloat(e.target.value).toFixed(2);
         console.log("mintPrice:",collection[e.target.name]);
       } else {
         collection[e.target.name] = parseInt(e.target.value);
