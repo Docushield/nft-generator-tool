@@ -1,10 +1,10 @@
-import Layout from "@/components/Layout";
-import AssetBlock from "@/components/blocks/AssetBlock";
-import MintBlock from "@/components/blocks/MintBlock";
+import Layout from '@/components/Layout';
+import AssetBlock from '@/components/blocks/AssetBlock';
+import MintBlock from '@/components/blocks/MintBlock';
 function Mint() {
   return (
     <Layout>
-      <div className="grid grid-cols-1 md:grid-cols-2 p-3">
+      <div className="grid grid-cols-1 xl:grid-cols-2 p-3">
         <AssetBlock />
         <MintBlock />
       </div>
