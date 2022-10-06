@@ -34,7 +34,6 @@ async function handlePost(data, res) {
         return footprint;
       }
     });
-
   await _buildOutputfile(footprint);
   const zipfile = await _zipOutputfile(footprint);
   res.status(200).json(zipfile);
@@ -64,7 +63,7 @@ async function _buildOutputfile(footprint) {
     let output = new Uint8Array(32); // 256 bit
     const blake2bHash = blake2b(output.length)
       .update(fs.readFileSync(token.hash))
-      .digest("hex");
+      .digest("binary");
     const base64hash = Buffer.from(blake2bHash).toString("base64");
     token.hash = base64hash;
 
@@ -76,7 +75,7 @@ async function _buildOutputfile(footprint) {
 
   let output = new Uint8Array(32) // 256 bit
   let input = Buffer.from(JSON.stringify(tokenHashs.sort()));
-  const provenanceHash = blake2b(output.length).update(input).digest('hex');
+  const provenanceHash = blake2b(output.length).update(input).digest('binary');
   jsonData["provenance-hash"] = Buffer.from(provenanceHash).toString("base64");
 
   jsonData["mint-royalties"] = {
