@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import PrimaryButton from "@/components/ui/PrimaryButton";
-import SecondaryButton from "@/components/ui/SecondaryButton";
-import ProgressBar from "@/components/ui/ProgressBar";
-import iconEdit from "@/assets/icon-edit.png";
-import axios from "axios";
-import { useAppContext } from "@/state/context";
-import { updateCollection } from "@/state/actions";
-import moment from "moment";
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import PrimaryButton from '@/components/ui/PrimaryButton';
+import SecondaryButton from '@/components/ui/SecondaryButton';
+import ProgressBar from '@/components/ui/ProgressBar';
+import iconEdit from '@/assets/icon-edit.png';
+import axios from 'axios';
+import { useAppContext } from '@/state/context';
+import { updateCollection } from '@/state/actions';
+import moment from 'moment';
 export default function MintBlock() {
   const { state, dispatch } = useAppContext();
   const { collection, organizeData, sourceZip } = state;
-  const [wlOpen, setWlOpen] = useState("wlopen");
-  const [mintType, setMintType] = useState("public");
-  const [fileContent, setFileContent] = useState("");
+  const [wlOpen, setWlOpen] = useState('wlopen');
+  const [mintType, setMintType] = useState('public');
+  const [fileContent, setFileContent] = useState('');
   const [previewing, setPreview] = useState(false);
-  const [footprint, setFootprint] = useState("");
+  const [footprint, setFootprint] = useState('');
   const [previewImageUrl, setPreviewImageUrl] = useState('/preview.png');
-  const [previewBtnTxt, setPreviewBtnTxt] = useState('preview');
+  const [previewBtnTxt, setPreviewBtnTxt] = useState('Generate Preview');
   const [progressPercentage, setProgressPercentage] = useState(10);
   const formHandler = (e) => {
     e.preventDefault();
@@ -25,11 +25,11 @@ export default function MintBlock() {
 
   const inputChangeHandler = (e) => {
     e.preventDefault();
-    console.log("value:", e.target.value, "name:", e.target.name);
+    console.log('value:', e.target.value, 'name:', e.target.name);
     collection[e.target.name] = e.target.value;
     dispatch(updateCollection(collection));
     console.log(collection);
-    console.log("value:", e.target.value, "name:", e.target.name);
+    console.log('value:', e.target.value, 'name:', e.target.name);
   };
 
   const mintTypeHandler = (mintType) => {
@@ -45,7 +45,7 @@ export default function MintBlock() {
       const file = event.target.files[0];
       // console.log("file:",file);
       const fileReader = new FileReader();
-      fileReader.readAsText(file, "UTF-8");
+      fileReader.readAsText(file, 'UTF-8');
       fileReader.onload = (e) => {
         const content = e.target.result;
         // console.log(content);
@@ -58,7 +58,7 @@ export default function MintBlock() {
 
   const mintTimeHandler = (event) => {
     event.preventDefault();
-    console.log("value:", event.target.value, "name:", event.target.name);
+    console.log('value:', event.target.value, 'name:', event.target.name);
     const utc = moment(event.target.value).utc().format();
     collection[event.target.name] = utc;
     dispatch(updateCollection(collection));
@@ -88,23 +88,22 @@ export default function MintBlock() {
       collection: collection,
       organizeData: organizeData,
       sourceZip: sourceZip,
-      currentprint:footprint
+      currentprint: footprint,
     };
-    const url = await axios.post("/api/preview", payload).then((response) => {
+    const url = await axios.post('/api/preview', payload).then((response) => {
       if (response.status == 200) {
         const { footprint, preview } = response.data;
         const url = `${preview}`;
-        console.log("url:", url);
+        console.log('url:', url);
         setFootprint(footprint);
         return url;
       }
     });
     setPreview(false);
-    if ("not yet" !== url) {
+    if ('not yet' !== url) {
       setPreviewImageUrl(url);
-      setPreviewBtnTxt("preview");
-    }
-    else {
+      setPreviewBtnTxt('preview');
+    } else {
       setPreviewBtnTxt(`${url}, try later`);
     }
   };
@@ -113,7 +112,7 @@ export default function MintBlock() {
     const payload = {
       footprint: footprint,
     };
-    const res = await axios.post("/api/generate", payload);
+    const res = await axios.post('/api/generate', payload);
     console.log(res);
     return res;
   };
@@ -121,13 +120,13 @@ export default function MintBlock() {
   const downloadOutputFile = async (footprint) => {
     await axios({
       url: `/api/download/${footprint}.zip`,
-      method: "GET",
-      responseType: "blob", // important
+      method: 'GET',
+      responseType: 'blob', // important
     }).then((response) => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
+      const link = document.createElement('a');
       link.href = url;
-      link.setAttribute("download", `${footprint}.zip`);
+      link.setAttribute('download', `${footprint}.zip`);
       document.body.appendChild(link);
       link.click();
     });
@@ -136,39 +135,43 @@ export default function MintBlock() {
   useEffect(() => {
     const interval = setInterval(() => {
       // console.log("previewing:",previewing);
-      const nextProgress =
-        progressPercentage >= 100 ? 0 : progressPercentage + 10;
+      const nextProgress = progressPercentage >= 100 ? 0 : progressPercentage + 10;
       setProgressPercentage(nextProgress);
     }, 1000);
     return () => clearInterval(interval);
   }, [progressPercentage, previewing]);
 
   return (
-    <section className="px-6">
-      <form
-        onSubmit={formHandler}
-        className="flex justify-between items-center"
-      >
+    <section className="px-6 py-6 xl:py-0">
+      <form onSubmit={formHandler} className="flex justify-between items-center">
         <div className="px-1">
-          <div className="mx-2 mb-5">
-            <div className="uppercase w-full text-gray my-2 font-medium">
-              Collection Name
+          <div className="flex mx-2 mb-5">
+            <div className="py-1">
+              <div className="uppercase w-full text-gray my-2 font-medium">Collection Name</div>
+              <input
+                type={'text'}
+                placeholder="Your collection name"
+                className="px-4 py-2 w-56 rounded-md"
+                onChange={inputChangeHandler}
+                name="collectionName"
+              ></input>
             </div>
-            <input
-              type={"text"}
-              placeholder="Your collection name"
-              className="px-4 py-2 w-56 rounded-md"
-              onChange={inputChangeHandler}
-              name="collectionName"
-            ></input>
+            <div className="ml-2 py-1">
+              <div className="uppercase w-full text-gray my-2 font-medium">Mint Price</div>
+              <input
+                type={'text'}
+                placeholder="Value in KDA"
+                className="px-4 py-2 w-36 rounded-md"
+                onChange={inputChangeHandler}
+                name="collectionName"
+              ></input>
+            </div>
           </div>
           <div className="flex mx-2 mb-5">
             <div className="py-1">
-              <div className="uppercase text-gray my-2 font-medium">
-                # OF NFTS
-              </div>
+              <div className="uppercase text-gray my-2 font-medium"># OF NFTS</div>
               <input
-                type={"number"}
+                type={'number'}
                 placeholder="10-10,000"
                 onChange={inputChangeHandler}
                 className="px-4 py-2 w-32 rounded-md"
@@ -176,29 +179,27 @@ export default function MintBlock() {
               ></input>
             </div>
             <div className="py-1 mx-3">
-              <div className="uppercase  text-gray my-2 font-medium">
-                MINT TYPE
-              </div>
+              <div className="uppercase  text-gray my-2 font-medium">MINT TYPE</div>
               <div className="text-gray grid grid-cols-2 gap-1 items-center">
                 <div>
                   <input
-                    type={"radio"}
+                    type={'radio'}
                     className="mr-1"
                     onChange={(e) => mintTypeHandler(e.target.value)}
-                    defaultChecked={mintType === "private"}
-                    value={"private"}
-                    name={"mintTypeRadio"}
+                    defaultChecked={mintType === 'private'}
+                    value={'private'}
+                    name={'mintTypeRadio'}
                   ></input>
                   <label className="uppercase text-gray">private</label>
                 </div>
-                <div>
+                <div className="ml-2">
                   <input
-                    type={"radio"}
+                    type={'radio'}
                     className="mr-1"
-                    defaultChecked={mintType == "public"}
+                    defaultChecked={mintType == 'public'}
                     onChange={(e) => mintTypeHandler(e.target.value)}
-                    value={"public"}
-                    name={"mintTypeRadio"}
+                    value={'public'}
+                    name={'mintTypeRadio'}
                   ></input>
                   <label className="uppercase text-gray">public</label>
                 </div>
@@ -206,35 +207,43 @@ export default function MintBlock() {
             </div>
           </div>
 
-          <div className="mx-2 mb-5">
-            <div className="uppercase  text-gray my-2 font-medium">
-              Creator K:Address
-            </div>
-            <input
-              type={"text"}
-              placeholder="k:address"
-              onChange={inputChangeHandler}
-              name="creator"
-              className="px-4 py-2 w-80 rounded-md "
-            ></input>
-          </div>
-          <div className="flex mx-2 mb-5 justify-between">
+          <div className="flex mx-2 mb-5">
             <div>
-              <div className="uppercase  text-gray my-2 font-medium">
-                Mint price
-              </div>
+              <div className="uppercase  text-gray my-2 font-medium">Creator K:Address</div>
               <input
-                type={"text"}
-                placeholder="Value in KDA"
+                type={'text'}
+                placeholder="k:address"
                 onChange={inputChangeHandler}
-                name="mintPrice"
+                name="creator"
+                className="px-4 py-2 w-56 rounded-md"
+              ></input>
+            </div>
+            <div className="ml-2">
+              <div className="uppercase text-gray my-2">ROYALTIES</div>
+              <input
+                type={'number'}
+                placeholder="5%"
+                name="royalties"
+                onChange={inputChangeHandler}
                 className="px-4 py-2 w-36 rounded-md "
               ></input>
             </div>
+          </div>
+          <div className="flex mx-2 mb-5 justify-between">
             <div>
-              <div className="uppercase text-gray my-2">ROYALTIES</div>
+              <div className="uppercase  text-gray my-2 font-medium">Royalties 2 K:Address</div>
               <input
-                type={"number"}
+                type={'text'}
+                placeholder="k:address"
+                onChange={inputChangeHandler}
+                name="mintPrice"
+                className="px-4 py-2 w-56 rounded-md "
+              ></input>
+            </div>
+            <div>
+              <div className="uppercase text-gray my-2">PERCENT</div>
+              <input
+                type={'number'}
                 placeholder="5%"
                 name="royalties"
                 onChange={inputChangeHandler}
@@ -245,26 +254,8 @@ export default function MintBlock() {
 
           <div className="mx-2 mb-5">
             <div className="uppercase  text-gray my-2 font-medium">
-              START MINT
-            </div>
-            <input
-              type={"date"}
-              placeholder="2022-08-25"
-              className="w-56 rounded-md "
-              onChange={mintTimeHandler}
-              name="mintStart"
-            ></input>
-          </div>
-          <div className="mx-2 mb-5">
-            <div className="uppercase  text-gray my-2 font-medium">
-              DESCRIPTION
-              <Image
-                src={iconEdit}
-                alt="icon"
-                width={13}
-                height={15}
-                className="inline-block ml-1"
-              ></Image>
+              <span className="mr-2">DESCRIPTION</span>
+              <Image src={iconEdit} alt="icon" width={13} height={15} className="inline-block"></Image>
             </div>
             <textarea
               placeholder="In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content."
@@ -273,32 +264,40 @@ export default function MintBlock() {
               onChange={inputChangeHandler}
             ></textarea>
           </div>
+          <div className="mx-2 mb-5">
+            <div className="uppercase  text-gray my-2 font-medium">START MINT</div>
+            <input
+              type={'date'}
+              placeholder="2022-08-25"
+              className="w-56 rounded-md "
+              onChange={mintTimeHandler}
+              name="mintStart"
+            ></input>
+          </div>
           <div className="mx-2 mb-5 flex items-center justify-between">
             <div>
-              <div className="uppercase text-gray my-2 font-medium">
-                WHITELIST
-              </div>
+              <div className="uppercase text-gray my-2 font-medium">WHITELIST</div>
               <div className="flex items-center">
                 <div className="text-gray grid grid-cols-2 gap-1 items-center">
                   <div>
                     <input
-                      type={"radio"}
+                      type={'radio'}
                       className="mr-1"
                       onChange={(e) => setWlOpen(e.target.value)}
-                      defaultChecked={wlOpen == "wlclose"}
-                      value={"wlclose"}
-                      name={"wl"}
+                      defaultChecked={wlOpen == 'wlclose'}
+                      value={'wlclose'}
+                      name={'wl'}
                     ></input>
                     <label className="uppercase">no</label>
                   </div>
-                  <div>
+                  <div className="ml-2">
                     <input
-                      type={"radio"}
+                      type={'radio'}
                       className="mr-1"
-                      value={"wlopen"}
-                      defaultChecked={wlOpen == "wlopen"}
+                      value={'wlopen'}
+                      defaultChecked={wlOpen == 'wlopen'}
                       onChange={(e) => setWlOpen(e.target.value)}
-                      name={"wl"}
+                      name={'wl'}
                     ></input>
                     <label className="uppercase">yes</label>
                   </div>
@@ -306,28 +305,18 @@ export default function MintBlock() {
               </div>
             </div>
             <div className="flex items-center py-2 pl-7">
-              <label
-                htmlFor="uploadWL"
-                className="flex flex-col items-center md:gap-2 cursor-pointer"
-              >
+              <label htmlFor="uploadWL" className="flex flex-col items-center md:gap-2 cursor-pointer">
                 <div className="rounded-sm shadow-sm uppercase border-blue border-4 w-32 h-7rounded-md bg-lightblue text-white font-medium ring-1 text-center">
                   UPLOAD WL
                 </div>
               </label>
-              <input
-                id="uploadWL"
-                type="file"
-                onChange={(e) => handleUploadWL(e)}
-                className="hidden"
-              ></input>
+              <input id="uploadWL" type="file" onChange={(e) => handleUploadWL(e)} className="hidden"></input>
             </div>
           </div>
           <div className="mx-2 mb-5">
-            <div className="uppercase  text-gray my-2 font-medium">
-              End whitelist
-            </div>
+            <div className="uppercase  text-gray my-2 font-medium">End whitelist</div>
             <input
-              type={"date"}
+              type={'date'}
               placeholder="2022-08-25"
               onChange={mintTimeHandler}
               className="rounded-md px-4 py-2 w-56"
@@ -337,20 +326,14 @@ export default function MintBlock() {
         </div>
         <div className="px-5 py-3">
           <div className="shadow-md p-2 mb-3 rounded-lg bg-[#FCFCFC] ">
-            <img
-              src={previewImageUrl}
-              alt="preview"
-              className="p-6 w-64 h-72"
-            />
+            <img src={previewImageUrl} alt="preview" className="p-6 w-80 h-80" />
             <SecondaryButton
               className="border-t border-zinc-300 py-5 text-neutral-50 uppercase w-full  outline-1 rounded-md shadow-md"
               onClick={(e) => {
                 generatePreviewHandler(e);
               }}
             >
-              <span className="uppercase my-2 font-medium">
-                {previewBtnTxt}
-              </span>
+              <span className="uppercase my-2 font-medium">{previewBtnTxt}</span>
             </SecondaryButton>
           </div>
           <div className="w-full">
