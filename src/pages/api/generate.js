@@ -6,9 +6,10 @@ import fse from "fs-extra";
 import { _fetchFilePath } from "@/utils/helper";
 import axios from "axios";
 import { basename } from "path";
-import ipfsOnlyHash from "ipfs-only-hash";
 import crypto from "crypto";
+import CIDv1 from "@/modules/CIDv1"
 import blake2b from "blake2b";
+import base64url from "base64url";
 async function handle(req, res) {
   const { method, body } = req;
   switch (method) {
@@ -50,7 +51,8 @@ async function _buildOutputfile(footprint) {
   let tokenHashs = [];
   for (let it = 0; it < tokenList.length; it++) {
     let token = tokenList[it];
-    const cid = await ipfsOnlyHash.of(fs.readFileSync(token.hash),{cidVersion:1});
+    // const cid = await ipfsOnlyHash.of(fs.readFileSync(token.hash),{cidVersion:1});
+    const cid = await CIDv1.calcCIDv1(token.hash);
     // console.log("cid:",cid);
     token.content_uri = {
       scheme: "ipfs://",
@@ -65,18 +67,22 @@ async function _buildOutputfile(footprint) {
       .update(fs.readFileSync(token.hash))
       .digest("binary");
     const base64hash = Buffer.from(blake2bHash).toString("base64");
-    token.hash = base64hash;
+    const base64hashurl = base64url.fromBase64(base64hash);
+    token.hash = base64hashurl;
 
-    tokenHashs.push(base64hash);
+    tokenHashs.push(base64hashurl);
   }
   // console.log("tokenList:",tokenList);
   jsonData["reveal-at"] = jsonData["mint-starts"];
+  jsonData["premint-price"] = jsonData["mint-price"];
   jsonData["token-list"] = tokenList;
 
   let output = new Uint8Array(32) // 256 bit
-  let input = Buffer.from(JSON.stringify(tokenHashs.sort()));
+  let input = Buffer.from(tokenHashs.join(""));
   const provenanceHash = blake2b(output.length).update(input).digest('binary');
-  jsonData["provenance-hash"] = Buffer.from(provenanceHash).toString("base64");
+  const provenanceHashBase64 = Buffer.from(provenanceHash).toString("base64");
+  const provenanceHashBase64url = base64url.fromBase64(provenanceHashBase64);
+  jsonData["provenance-hash"] = provenanceHashBase64url;
 
   jsonData["mint-royalties"] = {
     rates: [
