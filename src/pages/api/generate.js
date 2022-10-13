@@ -3,11 +3,11 @@ import JSZip from "jszip";
 import fs from "fs";
 import _ from "lodash";
 import fse from "fs-extra";
-import { _fetchFilePath } from "@/utils/helper";
+import { _fetchFilePath, copyObjectWithSortedKeys } from "@/utils/helper";
 import axios from "axios";
 import { basename } from "path";
 import crypto from "crypto";
-import CIDv1 from "@/modules/CIDv1"
+import CIDv1 from "@/modules/CIDv1";
 import blake2b from "blake2b";
 import base64url from "base64url";
 async function handle(req, res) {
@@ -63,8 +63,14 @@ async function _buildOutputfile(footprint) {
     // const base64hash = Buffer.from(sha256hash).toString('base64')
 
     let output = new Uint8Array(32); // 256 bit
+    // const blake2bHash = blake2b(output.length)
+    //   .update(fs.readFileSync(token.hash))
+    //   .digest("binary");
+    const specBuffer = Buffer.from(
+      JSON.stringify(copyObjectWithSortedKeys(token.spec))
+    );
     const blake2bHash = blake2b(output.length)
-      .update(fs.readFileSync(token.hash))
+      .update(specBuffer)
       .digest("binary");
     const base64hash = Buffer.from(blake2bHash).toString("base64");
     const base64hashurl = base64url.fromBase64(base64hash);
@@ -77,9 +83,9 @@ async function _buildOutputfile(footprint) {
   jsonData["premint-price"] = jsonData["mint-price"];
   jsonData["token-list"] = tokenList;
 
-  let output = new Uint8Array(32) // 256 bit
+  let output = new Uint8Array(32); // 256 bit
   let input = Buffer.from(tokenHashs.join(""));
-  const provenanceHash = blake2b(output.length).update(input).digest('binary');
+  const provenanceHash = blake2b(output.length).update(input).digest("binary");
   const provenanceHashBase64 = Buffer.from(provenanceHash).toString("base64");
   const provenanceHashBase64url = base64url.fromBase64(provenanceHashBase64);
   jsonData["provenance-hash"] = provenanceHashBase64url;
@@ -90,12 +96,24 @@ async function _buildOutputfile(footprint) {
         description: "creator",
         stakeholder:
           "k:047bc663e6cdaccb268e224765645dd11573091f9ff2ac083508b46a0647ace0",
+        "stakeholder-guard": {
+          keys: [
+            "047bc663e6cdaccb268e224765645dd11573091f9ff2ac083508b46a0647ace0",
+          ],
+          pred: "keys-all",
+        },
         rate: 0.975,
       },
       {
         description: "mintit",
         stakeholder:
           "k:d46967fd03942c50f0d50edc9c35d018fe01166853dc79f62e2fdf72689e0484",
+        "stakeholder-guard": {
+          keys: [
+            "d46967fd03942c50f0d50edc9c35d018fe01166853dc79f62e2fdf72689e0484",
+          ],
+          pred: "keys-all",
+        },
         rate: 0.025,
       },
     ],
@@ -107,12 +125,24 @@ async function _buildOutputfile(footprint) {
         description: "creator",
         stakeholder:
           "k:047bc663e6cdaccb268e224765645dd11573091f9ff2ac083508b46a0647ace0",
+        "stakeholder-guard": {
+          keys: [
+            "047bc663e6cdaccb268e224765645dd11573091f9ff2ac083508b46a0647ace0",
+          ],
+          pred: "keys-all",
+        },
         rate: 0.025,
       },
       {
         description: "mintit",
         stakeholder:
           "k:d46967fd03942c50f0d50edc9c35d018fe01166853dc79f62e2fdf72689e0484",
+        "stakeholder-guard": {
+          keys: [
+            "d46967fd03942c50f0d50edc9c35d018fe01166853dc79f62e2fdf72689e0484",
+          ],
+          pred: "keys-all",
+        },
         rate: 0.025,
       },
     ],
