@@ -27,9 +27,7 @@ async function handle(req, res) {
 async function handlePost(data, res) {
   const { sourceZip, collection } = data;
   const { footprint } = await _unzipPackage(sourceZip);
-  console.log(sourceZip, collection);
-  const { tokens, tokenHashs } = await _buildTokenMeta(footprint);
-  console.log("tokens:", tokens);
+  const { tokens, tokenHashs } = await _buildTokenMeta(collection.prefix, footprint);
   const collectionMetadata = await _buildCollectionMeta(
     footprint,
     collection,
@@ -76,7 +74,7 @@ async function _zipOutputfile(footprint) {
   });
 }
 
-async function _buildTokenMeta(footprint) {
+async function _buildTokenMeta(prefix,footprint) {
   const storageDir = process.env.STORAGE;
   const imagesDir = `${storageDir}/${footprint}`;
 
@@ -99,7 +97,7 @@ async function _buildTokenMeta(footprint) {
           attributes: [
             {
               trait_type: "Name",
-              value: image.filename.slice(0, -4),
+              value: _.isEmpty(prefix)?image.filename.slice(0, -4):`${prefix} ${image.filename.slice(0, -4)}`,
             },
           ],
         },
@@ -233,6 +231,12 @@ function _getElements(path) {
   return fs
     .readdirSync(path)
     .filter((item) => !/(^|\/)\.[^\/\.]/g.test(item))
+    .sort((a, b)=> {
+      const aIdx = a.slice(0,-4);
+      const bIdx = b.slice(0,-4);
+      // console.log("aIdx:", aIdx, ",bIdx:",bIdx);
+      return parseInt(aIdx.trim()) - parseInt(bIdx.trim())
+  })
     .map((i, index) => {
       return {
         id: index,

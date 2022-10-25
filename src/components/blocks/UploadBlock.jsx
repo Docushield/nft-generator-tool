@@ -3,7 +3,8 @@ import Image from "next/image";
 import logo from "@/assets/logo.png";
 import _ from "lodash";
 import { useAppContext } from "@/state/context";
-import {getSourceZipFile} from "@/state/actions"
+import {getSourceZipFile} from "@/state/actions";
+import JSZip from "jszip";
 export default function UploadBlock() {
     const { state, dispatch } = useAppContext();
     const [loading, setLoading] = useState(false);
@@ -14,13 +15,22 @@ export default function UploadBlock() {
         setLoading(true);
         setStatMsg("");
         setBtntxt("Processing...")
-        for(const file of e.target.files) {
-            console.log(file.name, file.size);
-        }
+        
         const file = e.target.files[0];
         if (file.size <=0 || file.size>1*1024*1024*1024) {
+            setStatMsg("over Max Size 1GB");
             return false;
         }
+
+        // const zip = new JSZip();
+        // zip.loadAsync(file).then(zipHdl => {
+
+        //   zipHdl.forEach(function (relativePath, zipEntry) {  
+        //     console.log("path:", relativePath);
+        // });
+        // }, reason => {
+        //   console.log(reason.message);
+        // });
         const formData = new FormData();
         const headers = new Headers();
         formData.append("source.zip",file);

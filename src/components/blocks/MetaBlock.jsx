@@ -22,6 +22,7 @@ export default function MetaBlock() {
     whiteList:[],
     mintStart:'',
     premintEnd:'',
+    prefix:'',
   });
   const formHandler = (e) => {
     e.preventDefault();
@@ -182,6 +183,18 @@ export default function MetaBlock() {
               placeholder="k:address"
               onChange={inputChangeHandler}
               name="creator"
+              className="px-4 py-2 rounded-md  w-2/3"
+            ></input>
+          </div>
+          <div className="mx-2 mb-5">
+            <div className="uppercase  text-gray my-2 font-medium">
+              Traits Prefix
+            </div>
+            <input
+              type={"text"}
+              placeholder="trait prefix"
+              onChange={inputChangeHandler}
+              name="prefix"
               className="px-4 py-2 rounded-md  w-2/3"
             ></input>
           </div>

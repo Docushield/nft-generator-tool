@@ -45,7 +45,6 @@ export default function MintBlock() {
   };
 
   const mintTypeHandler = (mintType) => {
-    // e.preventDefault();
     setMintType(mintType);
     collection.mintType = mintType;
     dispatch(updateCollection(collection));
