@@ -35,15 +35,27 @@ export default function LayerList({
     currentLayers[newIndex] = currentLayers[index];
     currentLayers[index] = stageItem;
     dispatch(updateCurrentLayers(currentLayers));
-
   };
+
   const deleteItem = (idx) => {
     const newList = currentLayers.filter((item) => {
       console.log("idx:", idx, "item.idx:", item.idx);
       return idx !== item.idx;
     });
     dispatch(updateCurrentLayers(newList));
+
+
+    const newOrganizeData = _.map(organizeData, item => {
+      if (item.idx == currentAttributeId)
+      {
+        item.elements = newList;
+      }
+      return item;
+    })
+
+    dispatch(updateOrganizeData(newOrganizeData));
   };
+
   const editItem = (idx, value) => {
     const newDataList = currentLayers.map((item) => {
       if (item.idx === idx) {
@@ -62,7 +74,6 @@ export default function LayerList({
     })
 
     dispatch(updateOrganizeData(newOrganizeData));
-
   };
 
   return (

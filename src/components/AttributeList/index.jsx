@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import classNames from "classnames";
 import PropTypes from "prop-types";
 import AttributeItem from "@/components/AttributeItem";
+import {updateOrganizeData} from "@/state/actions"
+import { useAppContext } from "@/state/context";
 import _ from "lodash";
 export default function AttributeList({
   children,
@@ -9,6 +11,7 @@ export default function AttributeList({
   className,
   ...props
 }) {
+  const { state, dispatch } = useAppContext();
   const [attributeList, setAttributeList] = useState(dataList);
   const cs = classNames([className]);
 
@@ -30,6 +33,7 @@ export default function AttributeList({
 
     console.log("move dataList:", attributeList);
     setAttributeList(attributeList);
+    dispatch(updateOrganizeData(attributeList));
   };
   const deleteItem = (idx) => {
     const newList = attributeList.filter((item) => {
@@ -37,6 +41,7 @@ export default function AttributeList({
       return idx !== item.idx;
     });
     setAttributeList(newList);
+    dispatch(updateOrganizeData(newList));
   };
   const editItem = (idx, value) => {
     const newList = attributeList.map((item) => {
@@ -46,6 +51,7 @@ export default function AttributeList({
       return item;
     });
     setAttributeList(newList);
+    dispatch(updateOrganizeData(newList));
   };
 
 

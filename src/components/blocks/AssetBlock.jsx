@@ -8,14 +8,13 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { useAppContext } from "@/state/context";
 import crypto from "crypto";
-import {updateCurrentAttributeId,updateCurrentLayerId,createOriginalData,createOrganizeData,updateOrganizeData,updateCurrentLayers,updateCurrentAttributes,getSourceZipFile} from "@/state/actions"
+import {updateCurrentAttributeId,updateCurrentLayerId,createOriginalData,createOrganizeData,updateCurrentLayers,getSourceZipFile} from "@/state/actions"
 export default function AssetBlock() {
   const { state, dispatch } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [btnTxt, setBtntxt] = useState('Select Assets Folder')
   const {organizeData, currentLayers} = state
   const handelOnChange = async (e) => {
-    // console.log(e);
     setLoading(true);
     setBtntxt("Processing...")
     const zip = new JSZip();
@@ -30,7 +29,6 @@ export default function AssetBlock() {
         originalItem.File = file;
         originalItem.path = file.webkitRelativePath;
         originalItem.fileHash = hash
-        // console.log(originalItem.fileHash);
         originalData.push(originalItem);
 
         const idx = _.findIndex(organizeData, (item) => {
