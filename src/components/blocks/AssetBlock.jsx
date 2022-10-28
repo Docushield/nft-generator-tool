@@ -38,13 +38,13 @@ export default function AssetBlock() {
           const slen = organizeData.length;
           let item = {
             name: arr[1],
-            elements: [{ element: arr[2], idx: 0,hash: hash, rarity:5 }],
+            elements: [{ element: arr[2], idx: 0,hash: hash, rarity:0 }],
             idx: slen
           };
           organizeData.push(item);
         } else {
           const slen = organizeData[idx].elements.length;
-          organizeData[idx].elements.push({ element: arr[2], idx: slen,hash: hash, rarity:5});
+          organizeData[idx].elements.push({ element: arr[2], idx: slen,hash: hash, rarity:0});
         }
       }
     }

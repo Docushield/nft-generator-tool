@@ -45,6 +45,7 @@ export default function LayerItem({
   };
 
   const rarityHandler = (rarity) => {
+    console.log("rarity:",rarity);
     const index = _.findIndex(currentLayers, (layer) => {
       return layer.idx == idx;
     });
@@ -109,9 +110,10 @@ export default function LayerItem({
       )}
         <input
             type="text"
-            placeholder="5%"
+            placeholder="0"
             size={3}
-            onChange={(e) => {rarityHandler(e.target.value)}}
+            value={data?.rarity}
+            onChange={(e) => {rarityHandler(parseInt(e.target.value))}}
             className="border border-lightgray rounded-xl p-4 outline-none focus:border-primary w-16 h-2 text-gray"
         />
     </div>
